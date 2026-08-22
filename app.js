@@ -268,7 +268,7 @@ var messageTimer = null;
 var NODE_IDS = [
   'level', 'level-text', 'xp-value', 'xp-track', 'xp-fill',
   'stat-strength', 'stat-intellect', 'stat-health', 'stat-discipline',
-  'today-meta', 'habits', 'limit-value', 'toast',
+  'today-meta', 'habits', 'toast',
   'levelup', 'levelup-badge', 'levelup-title', 'levelup-text', 'levelup-close'
 ];
 
@@ -295,7 +295,6 @@ function renderCharacter() {
   nodes['stat-health'].textContent = character.stats.health;
   nodes['stat-discipline'].textContent = character.stats.discipline;
 
-  nodes['limit-value'].textContent = xpToday() + ' / ' + DAILY_LIMIT;
 }
 
 var FLAME_PATH = 'M5 .5C6.6 3 8.5 4 8.5 7A3.5 3.5 0 0 1 1.5 7c0-1.8 1.6-2.7 3.5-6.5z';
@@ -383,8 +382,10 @@ function renderHabits() {
     return !habit.archived;
   });
 
+  /* Формат подзаголовка взят из макета: выполнено, всего и опыт за день
+     одной строкой, без отдельного блока про лимит. */
   var doneCount = visible.filter(isDoneToday).length;
-  nodes['today-meta'].textContent = doneCount + ' / ' + visible.length;
+  nodes['today-meta'].textContent = doneCount + ' из ' + visible.length + ' · ' + xpToday() + '/' + DAILY_LIMIT;
 
   nodes.habits.replaceChildren();
   visible.forEach(function (habit) {
