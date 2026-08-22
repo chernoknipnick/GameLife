@@ -456,3 +456,31 @@ body {
     transition: none;
   }
 }
+
+/* --- Сообщение об итоге действия --- */
+
+/* left + right + margin: auto центрируют блок и дают ему полную
+   доступную ширину. С left: 50% и transform ширина схлопывалась
+   до половины экрана — блок сжимался по остатку места справа. */
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 20px;
+  z-index: 10;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 10px 24px rgb(17 24 39 / 0.24);
+}
+
+.toast[hidden] {
+  display: none;
+}
