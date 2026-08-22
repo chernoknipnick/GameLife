@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Golos Text', 'Segoe UI', system-ui, sans-serif; }
+    a { color: #f0b34a; } a:hover { color: #ffd27d; }
+    .brk { position: absolute; width: 10px; height: 10px; border: 2px solid #56607f; }
+    .brk-tl { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+    .brk-tr { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
+    .brk-bl { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
+    .brk-br { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 375px; height: 812px; box-sizing: border-box; padding: 24px 20px 28px; background-color: #0b0d14; background-image: radial-gradient(120% 60% at 50% 0%, #1b2135 0%, #0b0d14 70%), repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 28px), repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, transparent 1px 28px); color: #edf0f7;">
+
+  <div style="display: flex; gap: 6px; flex-shrink: 0;">
+    <div style="height: 3px; flex-grow: 1; background-color: {{bar0}};"></div>
+    <div style="height: 3px; flex-grow: 1; background-color: {{bar1}};"></div>
+    <div style="height: 3px; flex-grow: 1; background-color: {{bar2}};"></div>
+  </div>
+
+  <sc-if value="{{isStep0}}" hint-placeholder-val="{{true}}">
+    <div style="display: flex; flex-direction: column; flex-grow: 1; padding-top: 40px;">
+      <div style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; background-image: linear-gradient(150deg, #ffd27d 0%, #c8862a 100%); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#14100a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>
+      </div>
+      <div style="margin-top: 26px; font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 28px; line-height: 1.18; letter-spacing: -0.02em;">Жизнь как ролевая игра</div>
+      <div style="margin-top: 14px; font-size: 15px; line-height: 1.6; color: #b9c0d6; text-wrap: pretty;">Реальные дела дают опыт персонажу. Зарядка качает Силу, книга — Интеллект, а регулярность — Дисциплину.</div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 26px;">
+        <div style="display: flex; align-items: center; gap: 14px; padding: 14px; background-color: #141825; border: 1px solid #2b3249; border-left: 3px solid #f2705f;">
+          <span style="width: 46px; flex-shrink: 0; text-align: center; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 15px; color: #f2705f;">+25</span>
+          <span style="font-size: 13px; line-height: 1.5; color: #b9c0d6;">Опыт за каждое выполненное дело</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px; padding: 14px; background-color: #141825; border: 1px solid #2b3249; border-left: 3px solid #6aa6ff;">
+          <span style="width: 46px; flex-shrink: 0; text-align: center; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 15px; color: #6aa6ff;">1.5x</span>
+          <span style="font-size: 13px; line-height: 1.5; color: #b9c0d6;">Множитель за длинную серию дней подряд</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px; padding: 14px; background-color: #141825; border: 1px solid #2b3249; border-left: 3px solid #4fc98a;">
+          <span style="width: 46px; flex-shrink: 0; text-align: center; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 17px; color: #4fc98a;">0</span>
+          <span style="font-size: 13px; line-height: 1.5; color: #b9c0d6;">Штрафов за пропуск нет. Прогресс просто стоит</span>
+        </div>
+      </div>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+        <button onClick="{{next}}" style="height: 52px; background-color: #f0b34a; border: 0; color: #14100a; font-family: 'Golos Text', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;">Начать</button>
+        <button onClick="{{skip}}" style="height: 46px; background-color: transparent; border: 0; color: #7d86a3; font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;">Пропустить</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isStep1}}">
+    <div style="display: flex; flex-direction: column; flex-grow: 1; padding-top: 40px;">
+      <div style="font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 25px; line-height: 1.2; letter-spacing: -0.02em;">Как зовут героя?</div>
+      <div style="margin-top: 10px; font-size: 14px; color: #98a0bb;">Имя можно будет поменять в настройках</div>
+
+      <div style="display: flex; justify-content: center; margin: 34px 0;">
+        <div style="position: relative; width: 108px; height: 108px; display: flex; align-items: center; justify-content: center; background-color: #141825; border: 1px solid #2f3752;">
+          <span class="brk brk-tl"></span><span class="brk brk-tr"></span><span class="brk brk-bl"></span><span class="brk brk-br"></span>
+          <div style="width: 52px; height: 52px; background-image: linear-gradient(150deg, #ffd27d 0%, #c8862a 100%); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);"></div>
+        </div>
+      </div>
+
+      <input value="{{name}}" onInput="{{setName}}" placeholder="Введите имя" style="width: 100%; height: 52px; padding: 0 14px; box-sizing: border-box; background-color: #0d101a; border: 1px solid #2f3752; color: #edf0f7; font-family: 'Golos Text', sans-serif; font-size: 16px;">
+
+      <div style="margin-top: auto; display: flex; gap: 10px;">
+        <button onClick="{{back}}" style="width: 104px; height: 52px; background-color: transparent; border: 1px solid #2f3752; color: #98a0bb; font-family: 'Golos Text', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer;">Назад</button>
+        <button onClick="{{next}}" style="flex-grow: 1; height: 52px; background-color: #f0b34a; border: 0; color: #14100a; font-family: 'Golos Text', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;">Дальше</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isStep2}}">
+    <div style="display: flex; flex-direction: column; flex-grow: 1; min-height: 0; padding-top: 32px;">
+      <div style="font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 23px; line-height: 1.2; letter-spacing: -0.02em;">С чего начнём?</div>
+      <div style="margin-top: 8px; font-size: 14px; color: #98a0bb;">Выберите от трёх до пяти привычек. Выбрано: <span style="font-weight: 700; color: {{countColor}};">{{count}}</span></div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 18px; overflow-y: auto; flex-grow: 1;">
+        <sc-for list="{{groups}}" as="group" hint-placeholder-count="3">
+          <div>
+            <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{group.color}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{group.icon}}"></path></svg>
+              <span style="font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: {{group.color}};">{{group.name}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 7px;">
+              <sc-for list="{{group.items}}" as="tpl" hint-placeholder-count="2">
+                <button onClick="{{tpl.toggle}}" style="display: flex; align-items: center; gap: 11px; min-height: 52px; padding: 10px 12px; text-align: left; background-color: {{tpl.bg}}; border: 1px solid {{tpl.border}}; cursor: pointer;">
+                  <span style="width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid {{tpl.boxBorder}}; background-color: {{tpl.boxBg}};">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#14100a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="{{tpl.tick}}"><path d="M5 13l4 4L19 7"></path></svg>
+                  </span>
+                  <span style="flex-grow: 1; font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 500; color: #edf0f7;">{{tpl.name}}</span>
+                  <span style="font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 500; color: #f0b34a;">+{{tpl.xp}}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; gap: 10px; padding-top: 16px;">
+        <button onClick="{{back}}" style="width: 104px; height: 52px; background-color: transparent; border: 1px solid #2f3752; color: #98a0bb; font-family: 'Golos Text', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer;">Назад</button>
+        <button onClick="{{noop}}" disabled="{{notReady}}" style="flex-grow: 1; height: 52px; background-color: {{ctaBg}}; border: 0; color: {{ctaFg}}; font-family: 'Golos Text', sans-serif; font-size: 16px; font-weight: 700; cursor: {{ctaCursor}};">{{ctaLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":375,"height":812}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { step: 0, name: '', picked: ['t1', 't2', 't3'] };
+  }
+
+  templates() {
+    return [
+      { id: 't1', name: 'Зарядка 10 минут', stat: 'str', xp: 25 },
+      { id: 't4', name: 'Тренировка в зале', stat: 'str', xp: 50 },
+      { id: 't2', name: 'Чтение 20 страниц', stat: 'int', xp: 10 },
+      { id: 't5', name: 'Учебный курс 30 минут', stat: 'int', xp: 25 },
+      { id: 't3', name: 'Медитация', stat: 'hp', xp: 10 },
+      { id: 't6', name: 'Восемь стаканов воды', stat: 'hp', xp: 10 }
+    ];
+  }
+
+  meta() {
+    return {
+      str: { name: 'Сила', color: '#f2705f', icon: 'M4 9v6M7 6v12M17 6v12M20 9v6M7 12h10' },
+      int: { name: 'Интеллект', color: '#6aa6ff', icon: 'M12 6.5C10.5 5 8 4.5 4 5v13c4-.5 6.5 0 8 1.5 1.5-1.5 4-2 8-1.5V5c-4-.5-6.5 0-8 1.5zM12 6.5V20' },
+      hp: { name: 'Здоровье', color: '#4fc98a', icon: 'M12 20s-7-4.5-7-9.5A4 4 0 0 1 12 7a4 4 0 0 1 7 3.5c0 5-7 9.5-7 9.5z' }
+    };
+  }
+
+  toggle(id) {
+    const picked = this.state.picked;
+    this.setState({ picked: picked.includes(id) ? picked.filter((x) => x !== id) : picked.concat([id]) });
+  }
+
+  renderVals() {
+    const step = this.state.step;
+    const meta = this.meta();
+    const count = this.state.picked.length;
+    const ready = count >= 3 && count <= 5;
+    const on = '#f0b34a';
+    const off = '#2b3249';
+
+    return {
+      isStep0: step === 0,
+      isStep1: step === 1,
+      isStep2: step === 2,
+      bar0: step >= 0 ? on : off,
+      bar1: step >= 1 ? on : off,
+      bar2: step >= 2 ? on : off,
+      next: () => this.setState({ step: Math.min(2, step + 1) }),
+      back: () => this.setState({ step: Math.max(0, step - 1) }),
+      skip: () => this.setState({ step: 2 }),
+      noop: () => {},
+      name: this.state.name,
+      setName: (e) => this.setState({ name: e.target.value }),
+      count: count,
+      countColor: ready ? '#4fc98a' : '#f0913f',
+      notReady: !ready,
+      ctaBg: ready ? '#f0b34a' : '#171b28',
+      ctaFg: ready ? '#14100a' : '#6f7a99',
+      ctaCursor: ready ? 'pointer' : 'default',
+      ctaLabel: ready ? 'Создать персонажа' : 'Выберите минимум три',
+      groups: ['str', 'int', 'hp'].map((key) => ({
+        name: meta[key].name,
+        color: meta[key].color,
+        icon: meta[key].icon,
+        items: this.templates().filter((t) => t.stat === key).map((t) => {
+          const chosen = this.state.picked.includes(t.id);
+          return {
+            name: t.name,
+            xp: t.xp,
+            bg: chosen ? '#1c2032' : '#10131e',
+            border: chosen ? '#f0b34a' : '#2b3249',
+            boxBg: chosen ? '#f0b34a' : 'transparent',
+            boxBorder: chosen ? '#f0b34a' : '#465071',
+            tick: chosen ? 1 : 0,
+            toggle: () => this.toggle(t.id)
+          };
+        })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

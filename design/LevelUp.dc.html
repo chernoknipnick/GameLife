@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Golos Text', 'Segoe UI', system-ui, sans-serif; }
+    a { color: #f0b34a; } a:hover { color: #ffd27d; }
+    .brk { position: absolute; width: 12px; height: 12px; border: 2px solid #f0b34a; }
+    .brk-tl { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+    .brk-tr { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
+    .brk-bl { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
+    .brk-br { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; justify-content: center; width: 375px; height: 812px; box-sizing: border-box; padding: 24px; background-color: #06080e; background-image: radial-gradient(90% 45% at 50% 40%, #2a2412 0%, #06080e 72%); color: #edf0f7;">
+
+  <div style="position: relative; width: 100%; padding: 32px 24px; text-align: center; background-image: linear-gradient(180deg, #241d0e 0%, #141825 100%); border: 1px solid #f0b34a;">
+    <span class="brk brk-tl"></span><span class="brk brk-tr"></span><span class="brk brk-bl"></span><span class="brk brk-br"></span>
+
+    <div style="font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: #f0b34a;">Новый уровень</div>
+
+    <div style="display: flex; align-items: center; justify-content: center; width: 96px; height: 96px; margin: 20px auto 0; background-image: linear-gradient(150deg, #ffd27d 0%, #c8862a 100%); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 40px; color: #14100a;">6</div>
+
+    <div style="margin-top: 18px; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 22px;">Уровень 6</div>
+    <div style="margin-top: 10px; font-size: 13px; line-height: 1.55; color: #b9c0d6;">Порог взят, остаток опыта перенесён на следующий уровень.</div>
+
+    <div style="display: flex; margin-top: 22px; border: 1px solid #2f3752;">
+      <div style="flex-grow: 1; padding: 14px 8px; background-color: #10131e;">
+        <div style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 20px; color: #f0b34a;">18</div>
+        <div style="margin-top: 4px; font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #98a0bb;">Перенесено</div>
+      </div>
+      <div style="flex-grow: 1; padding: 14px 8px; background-color: #10131e; border-left: 1px solid #232a3e;">
+        <div style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 20px;">350</div>
+        <div style="margin-top: 4px; font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #98a0bb;">До седьмого</div>
+      </div>
+    </div>
+
+    <button onClick="{{noop}}" style="width: 100%; height: 50px; margin-top: 22px; background-color: #f0b34a; border: 0; color: #14100a; font-family: 'Golos Text', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;">Отлично</button>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":375,"height":812}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { noop: () => {} };
+  }
+}
+</script>
+</body>
+</html>

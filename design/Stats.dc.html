@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Golos Text', 'Segoe UI', system-ui, sans-serif; }
+    a { color: #f0b34a; } a:hover { color: #ffd27d; }
+  </style>
+</helmet>
+<div style="width: 375px; min-height: 812px; box-sizing: border-box; padding: 20px 16px 28px; background-color: #0b0d14; background-image: radial-gradient(120% 60% at 50% 0%, #1b2135 0%, #0b0d14 70%), repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 28px), repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, transparent 1px 28px); color: #edf0f7;">
+
+  <div style="display: inline-block; padding: 3px 8px; background-color: #16202c; border: 1px solid #2c4a63; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6aa6ff;">Релиз v0.6</div>
+
+  <div style="margin-top: 12px; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 24px;">Прогресс</div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 18px;">
+    <sc-for list="{{kpi}}" as="k" hint-placeholder-count="4">
+      <div style="padding: 14px 12px; background-image: linear-gradient(180deg, #1a1f2f 0%, #141826 100%); border: 1px solid #2b3249;">
+        <div style="font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #98a0bb;">{{k.label}}</div>
+        <div style="margin-top: 8px; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 25px; color: {{k.color}};">{{k.value}}</div>
+        <div style="margin-top: 3px; font-size: 11px; color: #7d86a3;">{{k.hint}}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="margin-top: 22px; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #98a0bb;">Распределение опыта</div>
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px; padding: 16px 14px; background-color: #10131e; border: 1px solid #232a3e;">
+    <sc-for list="{{shares}}" as="sh" hint-placeholder-count="4">
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px;">
+          <span style="font-weight: 600; color: {{sh.color}};">{{sh.name}}</span>
+          <span style="font-family: 'Unbounded', sans-serif; font-weight: 500; color: #b9c0d6;">{{sh.value}} · {{sh.pct}}%</span>
+        </div>
+        <div style="height: 8px; margin-top: 5px; background-color: #0a0c13; border: 1px solid #232a3e;">
+          <div style="height: 100%; width: {{sh.pct}}%; background-color: {{sh.color}};"></div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 22px;">
+    <span style="font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #98a0bb;">Карта активности</span>
+    <span style="font-size: 11px; color: #7d86a3;">10 недель</span>
+  </div>
+  <div style="margin-top: 12px; padding: 16px 14px; background-color: #10131e; border: 1px solid #232a3e;">
+    <div style="display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px;">
+      <sc-for list="{{heat}}" as="cell" hint-placeholder-count="70">
+        <div style="aspect-ratio: 1; background-color: {{cell.color}};"></div>
+      </sc-for>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 5px; margin-top: 12px; font-size: 10px; color: #7d86a3;">
+      <span>реже</span>
+      <div style="width: 10px; height: 10px; background-color: #171b28;"></div>
+      <div style="width: 10px; height: 10px; background-color: #4a3a18;"></div>
+      <div style="width: 10px; height: 10px; background-color: #8a6522;"></div>
+      <div style="width: 10px; height: 10px; background-color: #c8862a;"></div>
+      <div style="width: 10px; height: 10px; background-color: #f0b34a;"></div>
+      <span>чаще</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 22px;">
+    <div style="display: flex; align-items: center; gap: 11px; padding: 13px; background-color: #0f1a16; border: 1px solid #245040;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4fc98a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c0 3-3 4-3 7a3 3 0 0 0 6 0c0-1-.4-1.9-1-2.6 2.4 1.1 4 3.3 4 6.1a6 6 0 0 1-12 0C6 9 10 7.5 12 3z"></path></svg>
+      <div style="flex-grow: 1;">
+        <div style="font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #6faf92;">Самая стабильная</div>
+        <div style="margin-top: 3px; font-size: 14px; font-weight: 600;">Чтение 20 страниц</div>
+      </div>
+      <div style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 15px; color: #4fc98a;">96%</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 13px; background-color: #1f1512; border: 1px solid #5a3128;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#f0913f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.5v.5M12 3l9 17H3z"></path></svg>
+      <div style="flex-grow: 1;">
+        <div style="font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #c08050;">Просела</div>
+        <div style="margin-top: 3px; font-size: 14px; font-weight: 600;">Тренировка в зале</div>
+      </div>
+      <div style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 15px; color: #f0913f;">34%</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 16px; font-size: 11px; line-height: 1.55; text-align: center; color: #6f7a99;">Бесплатный тариф показывает историю за 30 дней</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":375,"height":812}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const stats = [
+      { name: 'Интеллект', value: 320, color: '#6aa6ff' },
+      { name: 'Дисциплина', value: 210, color: '#b07df5' },
+      { name: 'Сила', value: 145, color: '#f2705f' },
+      { name: 'Здоровье', value: 90, color: '#4fc98a' }
+    ];
+    const total = stats.reduce((sum, s) => sum + s.value, 0);
+
+    const palette = ['#171b28', '#4a3a18', '#8a6522', '#c8862a', '#f0b34a'];
+    const heat = [];
+    for (let i = 0; i < 70; i += 1) {
+      const wave = Math.sin(i * 0.7) + Math.sin(i * 0.23);
+      const level = Math.max(0, Math.min(4, Math.round((wave + 2) * 1.15)));
+      heat.push({ color: palette[level] });
+    }
+
+    return {
+      kpi: [
+        { label: 'Выполнено за неделю', value: '24', hint: 'из 35 запланированных', color: '#edf0f7' },
+        { label: 'Процент выполнения', value: '69%', hint: 'цель — от 60%', color: '#4fc98a' },
+        { label: 'Опыт за неделю', value: '780', hint: 'потолок 500 в сутки', color: '#f0b34a' },
+        { label: 'Лучший стрик', value: '12', hint: 'рекорд по привычке', color: '#f0913f' }
+      ],
+      shares: stats.map((s) => ({
+        name: s.name,
+        value: s.value,
+        color: s.color,
+        pct: Math.round((s.value / total) * 100)
+      })),
+      heat: heat
+    };
+  }
+}
+</script>
+</body>
+</html>

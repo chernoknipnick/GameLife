@@ -110,7 +110,7 @@ class Component extends DCLogic {
       noop: () => {},
       statName: chosenStat.name,
       xp: chosenLevel.xp,
-      disciplineGain: Math.ceil(chosenLevel.xp * 0.3),
+      disciplineGain: Math.max(5, Math.round(chosenLevel.xp * 0.3)),
       stats: stats.map((s) => {
         const on = s.id === this.state.stat;
         return {

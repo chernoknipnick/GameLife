@@ -183,7 +183,8 @@ class Component extends DCLogic {
     if (!habit || habit.done) return;
 
     const gain = this.gainFor(habit);
-    const disciplineGain = Math.ceil(gain * 0.3);
+    if (this.state.dailyXp + gain > 500) return;
+    const disciplineGain = Math.max(5, Math.round(gain * 0.3));
 
     let level = this.state.level;
     let xp = this.state.xp + gain;
@@ -237,7 +238,7 @@ class Component extends DCLogic {
           diff: h.diff,
           streak: h.streak,
           gain: gain,
-          disciplineGain: Math.ceil(gain * 0.3),
+          disciplineGain: Math.max(5, Math.round(gain * 0.3)),
           done: h.done,
           opacity: h.done ? 0.45 : 1,
           strike: h.done ? 'line-through' : 'none',

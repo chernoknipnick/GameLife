@@ -178,7 +178,11 @@ class Component extends DCLogic {
     if (!habit || habit.done) return;
 
     const gain = this.gainFor(habit);
-    const disciplineGain = Math.ceil(gain * 0.3);
+    if (this.state.dailyXp + gain > 500) {
+      this.flash('Дневной лимит в 500 опыта исчерпан');
+      return;
+    }
+    const disciplineGain = Math.max(5, Math.round(gain * 0.3));
 
     let level = this.state.level;
     let xp = this.state.xp + gain;
@@ -195,13 +199,17 @@ class Component extends DCLogic {
       levelUp: levelled,
       discipline: this.state.discipline + disciplineGain,
       dailyXp: this.state.dailyXp + gain,
-      toast: '+' + gain + ' XP,  +' + disciplineGain + ' дисциплины',
       habits: this.state.habits.map((h) => (h.id === id ? Object.assign({}, h, { done: true, streak: h.streak + 1 }) : h)),
       str: this.state.str + (habit.stat === 'str' ? gain : 0),
       int: this.state.int + (habit.stat === 'int' ? gain : 0),
       hp: this.state.hp + (habit.stat === 'hp' ? gain : 0)
     });
 
+    this.flash('+' + gain + ' XP,  +' + disciplineGain + ' дисциплины');
+  }
+
+  flash(message) {
+    this.setState({ toast: message });
     clearTimeout(this.toastTimer);
     this.toastTimer = setTimeout(() => this.setState({ toast: null }), 2600);
   }
