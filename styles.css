@@ -1,0 +1,458 @@
+/* GameLife v0.1 — оформление главного экрана.
+   Значения перенесены из макета проекта Claude Design.
+   Отличие одно: зелёный на цветных плашках взят на тон темнее (#047857
+   вместо #059669) — со светлым текстом исходный оттенок не проходил
+   контраст WCAG AA, требование NFR-4.3. */
+
+:root {
+  --green: #047857;
+  --green-dark: #065f46;
+  --green-soft: #ecfdf5;
+
+  --ink: #111827;
+  --ink-soft: #4b5563;
+  --muted: #6b7280;
+  --muted-light: #9ca3af;
+
+  --bg: #f9fafb;
+  --surface: #ffffff;
+  --surface-dim: #f3f4f6;
+  --line: #e5e7eb;
+  --line-strong: #d1d5db;
+
+  --strength-bg: #ffedd5;
+  --strength-fg: #9a3412;
+  --strength-line: #fed7aa;
+
+  --intellect-bg: #dbeafe;
+  --intellect-fg: #1d4ed8;
+  --intellect-line: #bfdbfe;
+
+  --health-bg: #d1fae5;
+  --health-fg: #047857;
+  --health-line: #a7f3d0;
+
+  --discipline-bg: #f3f4f6;
+  --discipline-fg: #065f46;
+  --discipline-line: #d1d5db;
+
+  --fire-bg: #fff7ed;
+  --fire-fg: #9a3412;
+
+  --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Montserrat, 'Segoe UI', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.icon {
+  width: 0.7em;
+  height: 0.85em;
+  flex: none;
+}
+
+/* Контейнер: телефон во всю ширину, на широком экране — колонка по центру.
+   Полноценная десктопная раскладка в две колонки — задача 2. */
+.app {
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: var(--bg);
+}
+
+/* На широком экране колонка отделяется от фона. На телефоне
+   обрамление не нужно — там приложение занимает всю ширину. */
+@media (min-width: 520px) {
+  body {
+    background: var(--surface-dim);
+  }
+}
+
+/* --- Шапка с персонажем --- */
+
+.hero {
+  padding: 20px 20px 22px;
+  background: var(--green);
+  color: #fff;
+}
+
+.hero__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.hero__greeting {
+  min-width: 0;
+}
+
+.hero__hello {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.hero__name {
+  margin: 2px 0 0;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero__badges {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pill--streak {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.avatar__shape {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: #fff;
+  transform: rotate(45deg);
+}
+
+.avatar__level {
+  position: absolute;
+  bottom: -4px;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.xp__labels {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+
+.xp__caption {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.xp__value {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.xp__track {
+  height: 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+}
+
+.xp__fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: #fff;
+  transition: width 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Характеристики --- */
+
+.abilities {
+  padding: 16px 20px 0;
+}
+
+.abilities__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ability {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border: 1px solid;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.ability__abbr {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.ability__value {
+  font-family: var(--mono);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.ability--strength {
+  border-color: var(--strength-line);
+  background: var(--strength-bg);
+  color: var(--strength-fg);
+}
+
+.ability--intellect {
+  border-color: var(--intellect-line);
+  background: var(--intellect-bg);
+  color: var(--intellect-fg);
+}
+
+.ability--health {
+  border-color: var(--health-line);
+  background: var(--health-bg);
+  color: var(--health-fg);
+}
+
+/* Дисциплина пассивная (FR-3.4b): нейтральная плашка отделяет её
+   от трёх выбираемых характеристик. */
+.ability--discipline {
+  border-color: var(--discipline-line);
+  background: var(--discipline-bg);
+  color: var(--discipline-fg);
+}
+
+/* --- Список на сегодня --- */
+
+.today {
+  padding: 20px 20px 32px;
+}
+
+.today__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.today__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.today__meta {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.habits {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.habit {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.habit--completed {
+  background: var(--surface-dim);
+  opacity: 0.6;
+}
+
+.habit__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.habit__info {
+  min-width: 0;
+}
+
+.habit__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.habit__tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 8px 0 0;
+}
+
+.chip {
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.chip--strength {
+  background: var(--strength-bg);
+  color: var(--strength-fg);
+}
+
+.chip--intellect {
+  background: var(--intellect-bg);
+  color: var(--intellect-fg);
+}
+
+.chip--health {
+  background: var(--health-bg);
+  color: var(--health-fg);
+}
+
+.habit__gain {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pill--fire {
+  flex: none;
+  padding: 4px 9px;
+  background: var(--fire-bg);
+  color: var(--fire-fg);
+  font-size: 11px;
+}
+
+/* --- Кнопки --- */
+
+.btn {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.btn--done {
+  height: 46px;
+  margin-top: 12px;
+  border-color: var(--green);
+  border-radius: 12px;
+  background: var(--green);
+  color: #fff;
+}
+
+.btn--done:hover {
+  background: var(--green-dark);
+  border-color: var(--green-dark);
+}
+
+.btn--completed {
+  height: 46px;
+  margin-top: 12px;
+  border-color: var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--muted-light);
+  cursor: default;
+}
+
+.btn--add {
+  height: 50px;
+  margin-top: 12px;
+  border: 1px dashed var(--green);
+  border-radius: 14px;
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.btn--add:hover {
+  background: #d1fae5;
+}
+
+.limit {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.limit__value {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xp__fill {
+    transition: none;
+  }
+}
