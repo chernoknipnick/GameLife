@@ -248,6 +248,23 @@ body {
   line-height: 1.1;
 }
 
+/* Полоска до следующего уровня характеристики. Цвет берётся у карточки
+   через currentColor, поэтому отдельных правил на каждую не нужно. */
+.ability__track {
+  width: 100%;
+  height: 4px;
+  margin-top: 6px;
+  border-radius: 9999px;
+  background: rgb(17 24 39 / 0.1);
+  overflow: hidden;
+}
+
+.ability__fill {
+  display: block;
+  height: 100%;
+  background: currentColor;
+}
+
 .ability--strength {
   border-color: var(--strength-line);
   background: var(--strength-bg);

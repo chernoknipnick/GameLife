@@ -26,11 +26,33 @@ var DIFFICULTY = {
   hard: { label: 'Тяжёлая', xp: 50 }
 };
 
+/* Первые три характеристики выбираются при создании привычки,
+   дисциплина пассивная (FR-3.1, FR-3.3). */
 var STATS = {
   strength: { label: 'Сила', abbr: 'СИЛ' },
   intellect: { label: 'Интеллект', abbr: 'ИНТ' },
   health: { label: 'Здоровье', abbr: 'ЗДР' }
 };
+
+var ALL_STATS = ['strength', 'intellect', 'health', 'discipline'];
+
+var STAT_LABELS = {
+  strength: { label: 'Сила', abbr: 'СИЛ' },
+  intellect: { label: 'Интеллект', abbr: 'ИНТ' },
+  health: { label: 'Здоровье', abbr: 'ЗДР' },
+  discipline: { label: 'Дисциплина', abbr: 'ДИС' }
+};
+
+/* FR-3.5: у характеристики свой уровень, каждые 100 опыта. */
+var STAT_LEVEL_STEP = 100;
+
+function statLevel(xp) {
+  return 1 + Math.floor(xp / STAT_LEVEL_STEP);
+}
+
+function statProgress(xp) {
+  return xp % STAT_LEVEL_STEP;
+}
 
 /** Порог опыта до следующего уровня. */
 function xpToNextLevel(level) {
@@ -267,8 +289,7 @@ var messageTimer = null;
 
 var NODE_IDS = [
   'level', 'level-text', 'xp-value', 'xp-track', 'xp-fill',
-  'stat-strength', 'stat-intellect', 'stat-health', 'stat-discipline',
-  'today-meta', 'habits', 'toast',
+  'today-meta', 'habits', 'abilities', 'toast',
   'levelup', 'levelup-badge', 'levelup-title', 'levelup-text', 'levelup-close'
 ];
 
@@ -290,11 +311,51 @@ function renderCharacter() {
   nodes['xp-track'].setAttribute('aria-valuenow', character.xp);
   nodes['xp-track'].setAttribute('aria-valuemax', need);
 
-  nodes['stat-strength'].textContent = character.stats.strength;
-  nodes['stat-intellect'].textContent = character.stats.intellect;
-  nodes['stat-health'].textContent = character.stats.health;
-  nodes['stat-discipline'].textContent = character.stats.discipline;
 
+}
+
+function createAbilityCard(key) {
+  var xp = state.character.stats[key];
+  var level = statLevel(xp);
+  var progress = statProgress(xp);
+  var meta = STAT_LABELS[key];
+
+  var card = document.createElement('li');
+  card.className = 'ability ability--' + key;
+
+  var abbr = document.createElement('span');
+  abbr.className = 'ability__abbr';
+  abbr.textContent = meta.abbr;
+
+  var value = document.createElement('span');
+  value.className = 'ability__value';
+  value.textContent = level;
+
+  var track = document.createElement('span');
+  track.className = 'ability__track';
+
+  var fill = document.createElement('span');
+  fill.className = 'ability__fill';
+  fill.style.width = progress + '%';
+  track.append(fill);
+
+  /* Сокращение и голая цифра уровня понятны глазом, но не на слух —
+     полную расшифровку отдаём скринридеру. */
+  var hint = document.createElement('span');
+  hint.className = 'visually-hidden';
+  hint.textContent =
+    meta.label + ': уровень ' + level + ', ' + xp + ' опыта, до следующего уровня ' +
+    (STAT_LEVEL_STEP - progress);
+
+  card.append(abbr, value, track, hint);
+  return card;
+}
+
+function renderAbilities() {
+  nodes.abilities.replaceChildren();
+  ALL_STATS.forEach(function (key) {
+    nodes.abilities.append(createAbilityCard(key));
+  });
 }
 
 var FLAME_PATH = 'M5 .5C6.6 3 8.5 4 8.5 7A3.5 3.5 0 0 1 1.5 7c0-1.8 1.6-2.7 3.5-6.5z';
@@ -395,6 +456,7 @@ function renderHabits() {
 
 function render() {
   renderCharacter();
+  renderAbilities();
   renderHabits();
 }
 
