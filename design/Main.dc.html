@@ -1,0 +1,264 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Golos Text', 'Segoe UI', system-ui, sans-serif; }
+    a { color: #f0b34a; } a:hover { color: #ffd27d; }
+    .brk { position: absolute; width: 10px; height: 10px; border: 2px solid #56607f; }
+    .brk-tl { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+    .brk-tr { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
+    .brk-bl { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
+    .brk-br { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+  </style>
+</helmet>
+<div style="position: relative; width: 375px; min-height: 812px; background-color: #0b0d14; background-image: radial-gradient(120% 60% at 50% 0%, #1b2135 0%, #0b0d14 70%), repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 28px), repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, transparent 1px 28px); color: #edf0f7; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 18px 16px 28px;">
+
+    <div style="position: relative; padding: 16px; background-image: linear-gradient(180deg, #1d2233 0%, #141825 100%); border: 1px solid #2f3752; box-shadow: inset 0 1px 0 rgba(74,85,122,.5), 0 8px 24px rgba(0,0,0,.35);">
+      <span class="brk brk-tl"></span><span class="brk brk-tr"></span><span class="brk brk-bl"></span><span class="brk brk-br"></span>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 52px; height: 52px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background-image: linear-gradient(150deg, #ffd27d 0%, #c8862a 100%); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 20px; color: #14100a;">{{level}}</div>
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1;">
+          <div style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 17px; letter-spacing: -0.01em;">Владимир</div>
+          <div style="font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #98a0bb;">Уровень {{level}}</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <div style="position: relative; height: 16px; background-color: #0a0c13; border: 1px solid #363f5c; overflow: hidden;">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{xpPct}}%; background-image: linear-gradient(180deg, #ffd27d 0%, {{accent}} 55%, #c8862a 100%);"></div>
+          <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-image: repeating-linear-gradient(90deg, transparent 0 22px, rgba(11,13,20,.6) 22px 24px);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: #98a0bb;">
+          <span>Опыт до следующего уровня</span>
+          <span style="font-family: 'Unbounded', sans-serif; font-weight: 500; color: {{accent}};">{{xp}} / {{need}}</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 16px;">
+        <sc-for list="{{stats}}" as="st" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px 4px; background-color: #10131e; border: 1px solid #2a3149; border-top: 2px solid {{st.color}};">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{st.color}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{st.icon}}"></path></svg>
+            <div style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 16px; color: #edf0f7;">{{st.value}}</div>
+            <div style="font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #98a0bb;">{{st.name}}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 9px 10px; background-color: #150f21; border: 1px solid #3c2a5c;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b07df5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>
+        <div style="flex-grow: 1;">
+          <div style="font-size: 13px; font-weight: 600;">Дисциплина</div>
+          <div style="font-size: 11px; color: #9b8bbd;">Растёт сама с каждого выполнения</div>
+        </div>
+        <div style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 16px; color: #b07df5;">{{discipline}}</div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 2px;">
+      <div style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 19px;">Сегодня</div>
+      <div style="font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #98a0bb;">{{doneCount}} из {{totalCount}}</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <sc-for list="{{habits}}" as="habit" hint-placeholder-count="4">
+        <div style="position: relative; display: flex; align-items: center; gap: 12px; padding: 12px; background-image: linear-gradient(180deg, #1a1f2f 0%, #141826 100%); border: 1px solid #2b3249; border-left: 3px solid {{habit.color}}; opacity: {{habit.opacity}};">
+          <div style="width: 38px; height: 38px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background-color: {{habit.tint}}; border: 1px solid {{habit.color}};">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{habit.color}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{habit.icon}}"></path></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 7px;">
+              <span style="font-size: 15px; font-weight: 600; text-decoration: {{habit.strike}};">{{habit.name}}</span>
+              <sc-if value="{{habit.streak}}" hint-placeholder-val="{{true}}">
+                <span style="display: inline-flex; align-items: center; gap: 2px; padding: 1px 5px; background-color: #2a1a10; border: 1px solid #6d4320; font-size: 11px; font-weight: 600; color: #f0913f;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f0913f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c0 3-3 4-3 7a3 3 0 0 0 6 0c0-1-.4-1.9-1-2.6 2.4 1.1 4 3.3 4 6.1a6 6 0 0 1-12 0C6 9 10 7.5 12 3z"></path></svg>
+                  {{habit.streak}}
+                </span>
+              </sc-if>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #98a0bb;">
+              <span style="color: {{habit.color}}; font-weight: 600;">{{habit.statName}}</span>
+              <span style="color: #465071;">/</span>
+              <span>{{habit.diff}}</span>
+              <span style="color: #465071;">/</span>
+              <span style="font-weight: 600; color: {{accent}};">+{{habit.gain}} XP</span>
+            </div>
+          </div>
+          <button onClick="{{habit.complete}}" disabled="{{habit.done}}" style="flex-shrink: 0; min-width: 48px; height: 44px; padding: 0 12px; display: flex; align-items: center; justify-content: center; gap: 5px; background-color: {{habit.btnBg}}; color: {{habit.btnFg}}; border: 1px solid {{habit.btnBorder}}; font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 700; cursor: {{habit.cursor}};">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{habit.btnFg}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg>
+            {{habit.btnLabel}}
+          </button>
+        </div>
+      </sc-for>
+    </div>
+
+    <button onClick="{{noop}}" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; background-color: transparent; border: 1px dashed #3d4665; color: #98a0bb; font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#98a0bb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+      Добавить привычку
+    </button>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background-color: #10131e; border: 1px solid #232a3e; font-size: 11px; color: #7d86a3;">
+      <span>Дневной лимит опыта</span>
+      <span style="font-family: 'Unbounded', sans-serif; font-weight: 500; color: #98a0bb;">{{dailyXp}} / 500</span>
+    </div>
+  </div>
+
+  <sc-if value="{{toast}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; left: 50%; top: 96px; transform: translateX(-50%); padding: 9px 16px; background-color: #1c1608; border: 1px solid #f0b34a; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 14px; color: #ffd27d; white-space: nowrap;">{{toast}}</div>
+  </sc-if>
+
+  <sc-if value="{{levelUp}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; padding: 24px; background-color: rgba(5,7,12,.92);">
+      <div style="position: relative; width: 100%; padding: 28px 22px; text-align: center; background-image: linear-gradient(180deg, #241d0e 0%, #141825 100%); border: 1px solid #f0b34a;">
+        <span class="brk brk-tl" style="border-color: #f0b34a;"></span><span class="brk brk-tr" style="border-color: #f0b34a;"></span><span class="brk brk-bl" style="border-color: #f0b34a;"></span><span class="brk brk-br" style="border-color: #f0b34a;"></span>
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: #f0b34a;">Новый уровень</div>
+        <div style="margin: 14px auto 0; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; background-image: linear-gradient(150deg, #ffd27d 0%, #c8862a 100%); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 34px; color: #14100a;">{{level}}</div>
+        <div style="margin-top: 16px; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 20px;">Уровень {{level}}</div>
+        <div style="margin-top: 8px; font-size: 13px; line-height: 1.5; color: #b9c0d6;">Остаток опыта перенесён. До следующего уровня нужно {{need}}.</div>
+        <button onClick="{{closeLevelUp}}" style="margin-top: 20px; width: 100%; height: 46px; background-color: #f0b34a; color: #14100a; border: 0; font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;">Отлично</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#f0b34a","section":"Тема"},"$preview":{"width":375,"height":812}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      level: 5,
+      xp: 180,
+      str: 145,
+      int: 320,
+      hp: 90,
+      discipline: 210,
+      dailyXp: 0,
+      toast: null,
+      levelUp: false,
+      habits: [
+        { id: 1, name: 'Зарядка', stat: 'str', diff: 'Средняя', base: 25, streak: 3, done: false },
+        { id: 2, name: 'Чтение', stat: 'int', diff: 'Лёгкая', base: 10, streak: 12, done: true },
+        { id: 3, name: 'Медитация', stat: 'hp', diff: 'Лёгкая', base: 10, streak: 0, done: false },
+        { id: 4, name: 'Тренировка', stat: 'str', diff: 'Тяжёлая', base: 50, streak: 7, done: false }
+      ]
+    };
+  }
+
+  meta() {
+    return {
+      str: { name: 'Сила', color: '#f2705f', tint: '#2a1512', icon: 'M4 9v6M7 6v12M17 6v12M20 9v6M7 12h10' },
+      int: { name: 'Интеллект', color: '#6aa6ff', tint: '#111d33', icon: 'M12 6.5C10.5 5 8 4.5 4 5v13c4-.5 6.5 0 8 1.5 1.5-1.5 4-2 8-1.5V5c-4-.5-6.5 0-8 1.5zM12 6.5V20' },
+      hp: { name: 'Здоровье', color: '#4fc98a', tint: '#0f2620', icon: 'M12 20s-7-4.5-7-9.5A4 4 0 0 1 12 7a4 4 0 0 1 7 3.5c0 5-7 9.5-7 9.5z' }
+    };
+  }
+
+  multiplier(streak) {
+    if (streak >= 30) return 1.5;
+    if (streak >= 7) return 1.25;
+    if (streak >= 3) return 1.1;
+    return 1;
+  }
+
+  gainFor(habit) {
+    return Math.round(habit.base * this.multiplier(habit.streak));
+  }
+
+  complete(id) {
+    const habit = this.state.habits.find((h) => h.id === id);
+    if (!habit || habit.done) return;
+
+    const gain = this.gainFor(habit);
+    const disciplineGain = Math.ceil(gain * 0.3);
+
+    let level = this.state.level;
+    let xp = this.state.xp + gain;
+    let levelled = false;
+    while (xp >= 100 + (level - 1) * 50) {
+      xp -= 100 + (level - 1) * 50;
+      level += 1;
+      levelled = true;
+    }
+
+    this.setState({
+      level: level,
+      xp: xp,
+      levelUp: levelled,
+      discipline: this.state.discipline + disciplineGain,
+      dailyXp: this.state.dailyXp + gain,
+      toast: '+' + gain + ' XP,  +' + disciplineGain + ' дисциплины',
+      habits: this.state.habits.map((h) => (h.id === id ? Object.assign({}, h, { done: true, streak: h.streak + 1 }) : h)),
+      str: this.state.str + (habit.stat === 'str' ? gain : 0),
+      int: this.state.int + (habit.stat === 'int' ? gain : 0),
+      hp: this.state.hp + (habit.stat === 'hp' ? gain : 0)
+    });
+
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => this.setState({ toast: null }), 2600);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.toastTimer);
+  }
+
+  renderVals() {
+    const accent = this.props.accent ?? '#f0b34a';
+    const meta = this.meta();
+    const need = 100 + (this.state.level - 1) * 50;
+
+    return {
+      accent: accent,
+      level: this.state.level,
+      xp: this.state.xp,
+      need: need,
+      xpPct: Math.min(100, Math.round((this.state.xp / need) * 100)),
+      discipline: this.state.discipline,
+      dailyXp: this.state.dailyXp,
+      toast: this.state.toast,
+      levelUp: this.state.levelUp,
+      closeLevelUp: () => this.setState({ levelUp: false }),
+      noop: () => {},
+      doneCount: this.state.habits.filter((h) => h.done).length,
+      totalCount: this.state.habits.length,
+      stats: [
+        { name: 'Сила', value: this.state.str, color: meta.str.color, icon: meta.str.icon },
+        { name: 'Интеллект', value: this.state.int, color: meta.int.color, icon: meta.int.icon },
+        { name: 'Здоровье', value: this.state.hp, color: meta.hp.color, icon: meta.hp.icon }
+      ],
+      habits: this.state.habits.map((h) => {
+        const m = meta[h.stat];
+        return {
+          name: h.name,
+          statName: m.name,
+          color: m.color,
+          tint: m.tint,
+          icon: m.icon,
+          diff: h.diff,
+          streak: h.streak,
+          gain: this.gainFor(h),
+          done: h.done,
+          opacity: h.done ? 0.45 : 1,
+          strike: h.done ? 'line-through' : 'none',
+          cursor: h.done ? 'default' : 'pointer',
+          btnBg: h.done ? '#171b28' : accent,
+          btnFg: h.done ? '#6f7a99' : '#14100a',
+          btnBorder: h.done ? '#2b3249' : accent,
+          btnLabel: h.done ? 'Готово' : 'Выполнено',
+          complete: () => this.complete(h.id)
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

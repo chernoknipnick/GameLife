@@ -33,3 +33,6 @@ coverage/
 *.log
 .cache
 temp/
+
+# Собранный канвас дизайна — генерируется из design/*.dc.html, 2+ МБ
+design/gamelife-v01-screens.html

@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Golos Text', 'Segoe UI', system-ui, sans-serif; }
+    a { color: #f0b34a; } a:hover { color: #ffd27d; }
+    .brk { position: absolute; width: 10px; height: 10px; border: 2px solid #f0b34a; }
+    .brk-tl { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+    .brk-tr { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
+    .brk-bl { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
+    .brk-br { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+  </style>
+</helmet>
+<div style="position: relative; display: flex; align-items: flex-end; width: 375px; min-height: 812px; background-color: #05070c; background-image: radial-gradient(120% 50% at 50% 0%, #171c2c 0%, #05070c 70%);">
+
+  <div style="position: relative; width: 100%; padding: 20px 16px 24px; background-image: linear-gradient(180deg, #1d2233 0%, #141825 100%); border-top: 1px solid #f0b34a; color: #edf0f7;">
+    <span class="brk brk-tl"></span><span class="brk brk-tr"></span>
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 19px;">Новая привычка</div>
+      <button onClick="{{noop}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background-color: transparent; border: 1px solid #2f3752; cursor: pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#98a0bb" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
+
+    <div style="margin-top: 20px; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #98a0bb;">Название</div>
+    <input value="{{name}}" onInput="{{setName}}" placeholder="Например, зарядка" style="margin-top: 8px; width: 100%; height: 48px; padding: 0 12px; box-sizing: border-box; background-color: #0d101a; border: 1px solid #2f3752; color: #edf0f7; font-family: 'Golos Text', sans-serif; font-size: 15px;">
+
+    <div style="margin-top: 20px; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #98a0bb;">Характеристика</div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px;">
+      <sc-for list="{{stats}}" as="st" hint-placeholder-count="3">
+        <button onClick="{{st.pick}}" style="display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 76px; padding: 12px 4px; background-color: {{st.bg}}; border: 1px solid {{st.border}}; cursor: pointer;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{st.stroke}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{st.icon}}"></path></svg>
+          <span style="font-family: 'Golos Text', sans-serif; font-size: 11px; font-weight: 600; color: {{st.label}};">{{st.name}}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 9px 10px; background-color: #150f21; border: 1px solid #3c2a5c;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b07df5" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>
+      <span style="font-size: 11px; line-height: 1.4; color: #9b8bbd;">Дисциплина растёт с любой привычки — выбирать её не нужно</span>
+    </div>
+
+    <div style="margin-top: 20px; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #98a0bb;">Сложность</div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px;">
+      <sc-for list="{{levels}}" as="lv" hint-placeholder-count="3">
+        <button onClick="{{lv.pick}}" style="display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 66px; padding: 12px 4px; background-color: {{lv.bg}}; border: 1px solid {{lv.border}}; cursor: pointer;">
+          <span style="font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 17px; color: {{lv.value}};">{{lv.xp}}</span>
+          <span style="font-family: 'Golos Text', sans-serif; font-size: 11px; font-weight: 600; color: {{lv.label}};">{{lv.name}}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="position: relative; margin-top: 20px; padding: 14px; background-color: #0d101a; border: 1px dashed #4a5578;">
+      <div style="font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #7d86a3;">За одно выполнение</div>
+      <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 8px;">
+        <span style="font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 26px; color: #f0b34a;">+{{xp}}</span>
+        <span style="font-size: 13px; color: #b9c0d6;">опыта в характеристику «{{statName}}»</span>
+      </div>
+      <div style="margin-top: 6px; font-size: 13px; color: #9b8bbd;">и <span style="font-weight: 700; color: #b07df5;">+{{disciplineGain}}</span> к дисциплине</div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button onClick="{{noop}}" style="flex-grow: 1; height: 50px; background-color: transparent; border: 1px solid #2f3752; color: #98a0bb; font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;">Отмена</button>
+      <button onClick="{{noop}}" style="flex-grow: 2; height: 50px; background-color: #f0b34a; border: 0; color: #14100a; font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;">Создать привычку</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":375,"height":812}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { name: '', stat: 'str', level: 1 };
+  }
+
+  statList() {
+    return [
+      { id: 'str', name: 'Сила', color: '#f2705f', tint: '#2a1512', icon: 'M4 9v6M7 6v12M17 6v12M20 9v6M7 12h10' },
+      { id: 'int', name: 'Интеллект', color: '#6aa6ff', tint: '#111d33', icon: 'M12 6.5C10.5 5 8 4.5 4 5v13c4-.5 6.5 0 8 1.5 1.5-1.5 4-2 8-1.5V5c-4-.5-6.5 0-8 1.5zM12 6.5V20' },
+      { id: 'hp', name: 'Здоровье', color: '#4fc98a', tint: '#0f2620', icon: 'M12 20s-7-4.5-7-9.5A4 4 0 0 1 12 7a4 4 0 0 1 7 3.5c0 5-7 9.5-7 9.5z' }
+    ];
+  }
+
+  levelList() {
+    return [
+      { id: 1, name: 'Лёгкая', xp: 10 },
+      { id: 2, name: 'Средняя', xp: 25 },
+      { id: 3, name: 'Тяжёлая', xp: 50 }
+    ];
+  }
+
+  renderVals() {
+    const stats = this.statList();
+    const levels = this.levelList();
+    const chosenStat = stats.find((s) => s.id === this.state.stat);
+    const chosenLevel = levels.find((l) => l.id === this.state.level);
+
+    return {
+      name: this.state.name,
+      setName: (e) => this.setState({ name: e.target.value }),
+      noop: () => {},
+      statName: chosenStat.name,
+      xp: chosenLevel.xp,
+      disciplineGain: Math.ceil(chosenLevel.xp * 0.3),
+      stats: stats.map((s) => {
+        const on = s.id === this.state.stat;
+        return {
+          name: s.name,
+          icon: s.icon,
+          bg: on ? s.tint : '#0d101a',
+          border: on ? s.color : '#2f3752',
+          stroke: on ? s.color : '#6f7a99',
+          label: on ? '#edf0f7' : '#98a0bb',
+          pick: () => this.setState({ stat: s.id })
+        };
+      }),
+      levels: levels.map((l) => {
+        const on = l.id === this.state.level;
+        return {
+          name: l.name,
+          xp: l.xp,
+          bg: on ? '#241d0e' : '#0d101a',
+          border: on ? '#f0b34a' : '#2f3752',
+          value: on ? '#f0b34a' : '#6f7a99',
+          label: on ? '#edf0f7' : '#98a0bb',
+          pick: () => this.setState({ level: l.id })
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
