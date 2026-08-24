@@ -3,7 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="GameLife — геймифицированный трекер привычек: реальные дела дают опыт персонажу." />
+    <meta
+      name="description"
+      content="GameLife — геймифицированный трекер привычек: реальные дела дают опыт персонажу."
+    />
     <title>GameLife — Сегодня</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -53,7 +56,9 @@
           </span>
         </nav>
 
-        <p class="sidebar__note">Разделы с пометкой релиза спроектированы в техническом задании и появятся позже.</p>
+        <p class="sidebar__note">
+          Разделы с пометкой релиза спроектированы в техническом задании и появятся позже.
+        </p>
 
         <div class="sidebar__streak">
           <p class="sidebar__streak-label">Дней подряд</p>
@@ -71,7 +76,10 @@
           <div class="hero__badges">
             <p class="pill pill--streak" id="streak-pill" title="Дней подряд в приложении" hidden>
               <svg class="icon" viewBox="0 0 10 12" aria-hidden="true">
-                <path d="M5 .5C6.6 3 8.5 4 8.5 7A3.5 3.5 0 0 1 1.5 7c0-1.8 1.6-2.7 3.5-6.5z" fill="currentColor" />
+                <path
+                  d="M5 .5C6.6 3 8.5 4 8.5 7A3.5 3.5 0 0 1 1.5 7c0-1.8 1.6-2.7 3.5-6.5z"
+                  fill="currentColor"
+                />
               </svg>
               <span id="app-streak">1</span>
             </p>
@@ -118,14 +126,16 @@
         <div class="empty" id="empty" hidden>
           <p class="empty__title">Здесь пока пусто</p>
           <p class="empty__text">
-            Добавьте первую привычку — например, зарядку на пять минут.
-            Каждое выполнение будет давать опыт персонажу.
+            Добавьте первую привычку — например, зарядку на пять минут. Каждое выполнение будет
+            давать опыт персонажу.
           </p>
         </div>
 
         <button class="btn btn--add" type="button" id="add-open">Добавить привычку</button>
 
-        <button class="btn btn--reset" type="button" id="reset-open" hidden>Сбросить прогресс</button>
+        <button class="btn btn--reset" type="button" id="reset-open" hidden>
+          Сбросить прогресс
+        </button>
       </main>
 
       <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
@@ -136,7 +146,9 @@
           <p class="modal__badge" id="levelup-badge">2</p>
           <h2 class="modal__title" id="levelup-title">Уровень 2</h2>
           <p class="modal__text" id="levelup-text"></p>
-          <button class="btn btn--primary btn--modal" id="levelup-close" type="button">Отлично</button>
+          <button class="btn btn--primary btn--modal" id="levelup-close" type="button">
+            Отлично
+          </button>
         </div>
       </div>
 
@@ -170,13 +182,23 @@
 
           <div class="field">
             <p class="field__label" id="stat-label">Характеристика</p>
-            <div class="choices" id="stat-choices" role="radiogroup" aria-labelledby="stat-label"></div>
+            <div
+              class="choices"
+              id="stat-choices"
+              role="radiogroup"
+              aria-labelledby="stat-label"
+            ></div>
             <p class="field__hint">Дисциплина растёт с любой привычки — выбирать её не нужно</p>
           </div>
 
           <div class="field">
             <p class="field__label" id="diff-label">Сложность</p>
-            <div class="choices" id="diff-choices" role="radiogroup" aria-labelledby="diff-label"></div>
+            <div
+              class="choices"
+              id="diff-choices"
+              role="radiogroup"
+              aria-labelledby="diff-label"
+            ></div>
           </div>
 
           <div class="preview">
@@ -208,8 +230,8 @@
             <span class="onboarding__mark" aria-hidden="true"></span>
             <h1 class="onboarding__title">Реальные дела — игровой прогресс</h1>
             <p class="onboarding__text">
-              Каждое выполненное дело даёт опыт персонажу и качает характеристику.
-              Пропуск дня ничего не отнимает.
+              Каждое выполненное дело даёт опыт персонажу и качает характеристику. Пропуск дня
+              ничего не отнимает.
             </p>
 
             <ul class="facts">
@@ -255,13 +277,22 @@
 
           <div class="onboarding__panel" id="onb-step-2" hidden>
             <h2 class="onboarding__title">Стартовые привычки</h2>
-            <p class="onboarding__text" id="onb-hint">Выберите от 3 до 5 — остальное добавите позже.</p>
+            <p class="onboarding__text" id="onb-hint">
+              Выберите от 3 до 5 — остальное добавите позже.
+            </p>
 
-            <div class="templates" id="onb-templates" role="group" aria-label="Шаблоны привычек"></div>
+            <div
+              class="templates"
+              id="onb-templates"
+              role="group"
+              aria-label="Шаблоны привычек"
+            ></div>
 
             <div class="onboarding__actions onboarding__actions--row">
               <button class="btn btn--ghost" type="button" id="onb-back-2">Назад</button>
-              <button class="btn btn--primary" type="button" id="onb-finish">Создать персонажа</button>
+              <button class="btn btn--primary" type="button" id="onb-finish">
+                Создать персонажа
+              </button>
             </div>
           </div>
         </div>

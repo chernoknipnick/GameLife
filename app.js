@@ -30,7 +30,7 @@ var MAX_TITLE_LENGTH = 60;
 var DIFFICULTY = {
   easy: { label: 'Лёгкая', xp: 10 },
   medium: { label: 'Средняя', xp: 25 },
-  hard: { label: 'Тяжёлая', xp: 50 }
+  hard: { label: 'Тяжёлая', xp: 50 },
 };
 
 /* Первые три характеристики выбираются при создании привычки,
@@ -38,7 +38,7 @@ var DIFFICULTY = {
 var STATS = {
   strength: { label: 'Сила', abbr: 'СИЛ' },
   intellect: { label: 'Интеллект', abbr: 'ИНТ' },
-  health: { label: 'Здоровье', abbr: 'ЗДР' }
+  health: { label: 'Здоровье', abbr: 'ЗДР' },
 };
 
 var ALL_STATS = ['strength', 'intellect', 'health', 'discipline'];
@@ -47,7 +47,7 @@ var STAT_LABELS = {
   strength: { label: 'Сила', abbr: 'СИЛ' },
   intellect: { label: 'Интеллект', abbr: 'ИНТ' },
   health: { label: 'Здоровье', abbr: 'ЗДР' },
-  discipline: { label: 'Дисциплина', abbr: 'ДИС' }
+  discipline: { label: 'Дисциплина', abbr: 'ДИС' },
 };
 
 /* FR-3.5: у характеристики свой уровень, каждые 100 опыта. */
@@ -69,7 +69,7 @@ var TEMPLATES = [
   { title: 'Чтение 20 страниц', stat: 'intellect', difficulty: 'easy' },
   { title: 'Учебный курс 30 минут', stat: 'intellect', difficulty: 'medium' },
   { title: 'Медитация', stat: 'health', difficulty: 'easy' },
-  { title: 'Восемь стаканов воды', stat: 'health', difficulty: 'easy' }
+  { title: 'Восемь стаканов воды', stat: 'health', difficulty: 'easy' },
 ];
 
 var MIN_STARTER_HABITS = 3;
@@ -147,12 +147,12 @@ function createInitialState() {
       xp: 0,
       totalXp: 0,
       createdAt: dayKey(new Date(), 4),
-      stats: { strength: 0, intellect: 0, health: 0, discipline: 0 }
+      stats: { strength: 0, intellect: 0, health: 0, discipline: 0 },
     },
     habits: [],
     tasks: [],
     history: [],
-    settings: { theme: 'light', dayResetHour: 4 }
+    settings: { theme: 'light', dayResetHour: 4 },
   };
 }
 
@@ -167,7 +167,7 @@ function makeHabit(title, stat, difficulty) {
     bestStreak: 0,
     lastDone: null,
     createdAt: today(),
-    archived: false
+    archived: false,
   };
 }
 
@@ -281,13 +281,19 @@ function completeHabit(id) {
   /* Множитель заслужен вчерашними днями, а не сегодняшним нажатием,
      поэтому считаем по серии ДО начисления. Оборванная серия множителя
      не даёт, даже если её число ещё висит на карточке. */
-  var gain = Math.round(DIFFICULTY[habit.difficulty].xp * streakMultiplier(continues ? habit.streak : 0));
+  var gain = Math.round(
+    DIFFICULTY[habit.difficulty].xp * streakMultiplier(continues ? habit.streak : 0)
+  );
 
   /* Раздел 7.3: лимит блокирующий, но ничего не отнимает. Проверяем до
      любых изменений — иначе пришлось бы откатывать серию, а откат легко
      теряет исходное значение. */
   if (xpToday() + gain > DAILY_LIMIT) {
-    showMessage('Дневной лимит в ' + DAILY_LIMIT + ' опыта исчерпан. Заработанное осталось при вас, начисление продолжится завтра.');
+    showMessage(
+      'Дневной лимит в ' +
+        DAILY_LIMIT +
+        ' опыта исчерпан. Заработанное осталось при вас, начисление продолжится завтра.'
+    );
     return false;
   }
 
@@ -314,7 +320,15 @@ function completeHabit(id) {
   if (levelsGained > 0) {
     showLevelUp(levelsGained);
   } else {
-    showMessage('+' + gain + ' в характеристику «' + STATS[habit.stat].label + '», +' + discipline + ' к дисциплине');
+    showMessage(
+      '+' +
+        gain +
+        ' в характеристику «' +
+        STATS[habit.stat].label +
+        '», +' +
+        discipline +
+        ' к дисциплине'
+    );
   }
 
   return true;
@@ -416,17 +430,56 @@ var nodes = {};
 var messageTimer = null;
 
 var NODE_IDS = [
-  'level', 'level-text', 'xp-value', 'xp-track', 'xp-fill',
-  'today-meta', 'habits', 'abilities', 'empty', 'toast',
-  'hero-name', 'app-streak', 'streak-pill', 'sidebar-streak', 'add-open', 'reset-open',
-  'levelup', 'levelup-badge', 'levelup-title', 'levelup-text', 'levelup-close',
-  'confirm', 'confirm-title', 'confirm-text', 'confirm-cancel', 'confirm-delete',
-  'sheet', 'sheet-cancel', 'sheet-save', 'habit-title',
-  'stat-choices', 'diff-choices', 'preview-xp', 'preview-discipline',
-  'onboarding', 'onb-bar-0', 'onb-bar-1', 'onb-bar-2',
-  'onb-step-0', 'onb-step-1', 'onb-step-2',
-  'onb-begin', 'onb-skip', 'onb-name', 'onb-back-1', 'onb-next',
-  'onb-hint', 'onb-templates', 'onb-back-2', 'onb-finish'
+  'level',
+  'level-text',
+  'xp-value',
+  'xp-track',
+  'xp-fill',
+  'today-meta',
+  'habits',
+  'abilities',
+  'empty',
+  'toast',
+  'hero-name',
+  'app-streak',
+  'streak-pill',
+  'sidebar-streak',
+  'add-open',
+  'reset-open',
+  'levelup',
+  'levelup-badge',
+  'levelup-title',
+  'levelup-text',
+  'levelup-close',
+  'confirm',
+  'confirm-title',
+  'confirm-text',
+  'confirm-cancel',
+  'confirm-delete',
+  'sheet',
+  'sheet-cancel',
+  'sheet-save',
+  'habit-title',
+  'stat-choices',
+  'diff-choices',
+  'preview-xp',
+  'preview-discipline',
+  'onboarding',
+  'onb-bar-0',
+  'onb-bar-1',
+  'onb-bar-2',
+  'onb-step-0',
+  'onb-step-1',
+  'onb-step-2',
+  'onb-begin',
+  'onb-skip',
+  'onb-name',
+  'onb-back-1',
+  'onb-next',
+  'onb-hint',
+  'onb-templates',
+  'onb-back-2',
+  'onb-finish',
 ];
 
 function cacheNodes() {
@@ -452,8 +505,6 @@ function renderCharacter() {
   nodes['xp-fill'].style.width = percent + '%';
   nodes['xp-track'].setAttribute('aria-valuenow', character.xp);
   nodes['xp-track'].setAttribute('aria-valuemax', need);
-
-
 }
 
 function createAbilityCard(key) {
@@ -486,7 +537,12 @@ function createAbilityCard(key) {
   var hint = document.createElement('span');
   hint.className = 'visually-hidden';
   hint.textContent =
-    meta.label + ': уровень ' + level + ', ' + xp + ' опыта, до следующего уровня ' +
+    meta.label +
+    ': уровень ' +
+    level +
+    ', ' +
+    xp +
+    ' опыта, до следующего уровня ' +
     (STAT_LEVEL_STEP - progress);
 
   card.append(abbr, value, track, hint);
@@ -516,7 +572,8 @@ function createFlameIcon() {
   return svg;
 }
 
-var TRASH_PATH = 'M3 5.5h14M8 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M5 5.5l.8 11a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9l.8-11';
+var TRASH_PATH =
+  'M3 5.5h14M8 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M5 5.5l.8 11a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9l.8-11';
 
 function createTrashIcon() {
   var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -621,7 +678,8 @@ function renderHabits() {
   /* Формат подзаголовка взят из макета: выполнено, всего и опыт за день
      одной строкой, без отдельного блока про лимит. */
   var doneCount = visible.filter(isDoneToday).length;
-  nodes['today-meta'].textContent = doneCount + ' из ' + visible.length + ' · ' + xpToday() + '/' + DAILY_LIMIT;
+  nodes['today-meta'].textContent =
+    doneCount + ' из ' + visible.length + ' · ' + xpToday() + '/' + DAILY_LIMIT;
 
   // NFR-4.5: пустой список объясняет, что делать дальше.
   nodes.empty.hidden = visible.length > 0;
@@ -658,7 +716,11 @@ function showLevelUp(levelsGained) {
   nodes['levelup-title'].textContent = 'Уровень ' + character.level;
   nodes['levelup-text'].textContent =
     (levelsGained > 1 ? 'Взято уровней за раз: ' + levelsGained + '. ' : '') +
-    'Остаток опыта перенесён: ' + character.xp + ' из ' + xpToNextLevel(character.level) + ' до следующего.';
+    'Остаток опыта перенесён: ' +
+    character.xp +
+    ' из ' +
+    xpToNextLevel(character.level) +
+    ' до следующего.';
 
   nodes.levelup.hidden = false;
   nodes['levelup-close'].focus();
@@ -707,7 +769,9 @@ function createChoice(id, group, selected, label, extra) {
 function renderSheet() {
   nodes['stat-choices'].replaceChildren();
   Object.keys(STATS).forEach(function (key) {
-    nodes['stat-choices'].append(createChoice(key, 'stat', draft.stat === key, STATS[key].label, null));
+    nodes['stat-choices'].append(
+      createChoice(key, 'stat', draft.stat === key, STATS[key].label, null)
+    );
   });
 
   nodes['diff-choices'].replaceChildren();
@@ -778,7 +842,9 @@ function askDelete(id) {
 
   askConfirm(
     'Удалить привычку?',
-    'Привычка «' + habit.title + '» исчезнет из списка' +
+    'Привычка «' +
+      habit.title +
+      '» исчезнет из списка' +
       (habit.streak > 0 ? ', серия в ' + habit.streak + ' дн. будет потеряна' : '') +
       '. Опыт и уровень персонажа останутся при вас.',
     'Удалить',
@@ -892,7 +958,11 @@ function renderOnboarding() {
 
   nodes['onb-hint'].textContent = enough
     ? 'Выбрано ' + count + '. Остальное добавите позже.'
-    : 'Выберите от ' + MIN_STARTER_HABITS + ' до ' + MAX_STARTER_HABITS + ' — остальное добавите позже.';
+    : 'Выберите от ' +
+      MIN_STARTER_HABITS +
+      ' до ' +
+      MAX_STARTER_HABITS +
+      ' — остальное добавите позже.';
 
   nodes['onb-finish'].disabled = !enough;
 }

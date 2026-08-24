@@ -1,0 +1,40 @@
+# Автоматические проверки для пул-реквестов.
+#
+# У проекта нет сборки и тестов — это чистые HTML, CSS и JavaScript,
+# которые открываются прямым запуском index.html. Поэтому проверяем то,
+# что имеет смысл на этом этапе: синтаксис скрипта, единый формат кода
+# и корректность разметки. Настоящие тесты появятся вместе с React в
+# v0.3, когда будет что и чем тестировать.
+
+name: Проверки
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    name: Синтаксис, формат и разметка
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Забрать код
+        uses: actions/checkout@v4
+
+      - name: Поставить Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Синтаксис JavaScript
+        run: node --check app.js
+
+      # Правила формата лежат в .prettierrc и одинаковы локально и здесь.
+      - name: Единый формат кода
+        run: npx --yes prettier@3.3.3 --check index.html styles.css app.js
+
+      # Набор правил сужен в .htmlvalidate.json: часть стилистических
+      # проверок противоречит формату от Prettier, содержательные оставлены.
+      - name: Корректность разметки
+        run: npx --yes html-validate@8.24.1 index.html
