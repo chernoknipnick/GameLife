@@ -1,24 +1,28 @@
 'use strict';
 
-/* GameLife v0.1 — задачи 3, 4 и 5 Фазы 1.
+/* GameLife v0.1 — задачи 3—6 Фазы 1.
 
-   Покрывает FR-2.4, FR-2.5, FR-2.6 (уровни), FR-3.4, FR-3.4a (опыт),
-   FR-4.4, FR-4.5, FR-4.6 (привычки), FR-7.1—FR-7.4 (стрики),
-   NFR-2.1 (данные переживают закрытие браузера), раздел 7 (баланс).
+   Покрывает FR-2.4—FR-2.6 (уровни), FR-3.4, FR-3.4a, FR-3.5 (опыт и
+   уровни характеристик), FR-4.2—FR-4.7 (привычки: создание, удаление,
+   сложности, одно выполнение в сутки, лимит в 20), FR-7.1—FR-7.4
+   (стрики), NFR-2.1 (данные переживают закрытие браузера), NFR-4.4
+   (удаление спрашивает подтверждение), NFR-4.5 (пустое состояние),
+   раздел 7 (баланс).
 
    Формат хранения повторяет раздел 6.1 ТЗ, включая поля, которые пока
    не используются (bestStreak, schedule, archived, settings.theme) —
    чтобы задачи 6–8 и переход на React в v0.3 не ломали сохранённые
    данные.
 
-   Чего ещё нет: создание и удаление привычек (задача 6), сброс
-   прогресса (задача 8). */
+   Чего ещё нет: сброс прогресса (задача 8), онбординг (задача 10). */
 
 /* --- Правила игры (раздел 7 ТЗ) --- */
 
 var STORAGE_KEY = 'gamelife';
 var SCHEMA_VERSION = 1;
 var DAILY_LIMIT = 500;
+var MAX_HABITS = 20; // FR-4.7
+var MAX_TITLE_LENGTH = 60;
 
 var DIFFICULTY = {
   easy: { label: 'Лёгкая', xp: 10 },
@@ -109,47 +113,38 @@ function dayBefore(key) {
 
 var state = null;
 
+/* Новый игрок начинает с чистого листа: первый уровень, пустой список
+   с подсказкой. Захардкоженный демо-набор убран — привычки заводятся
+   вручную, а с задачей 10 их будет предлагать онбординг. */
 function createInitialState() {
-  var now = new Date();
-  var todayKey = dayKey(now, 4);
-  var yesterday = dayBefore(todayKey);
-  var createdAt = todayKey;
-
-  /* Стартовый набор привычек. Появится онбординг с выбором шаблонов
-     (FR-1.3) — этот блок заменит он. Пустой список сейчас был бы
-     тупиком: добавлять привычки пока нечем, это задача 6. */
   return {
     version: SCHEMA_VERSION,
     character: {
-      name: 'Владимир',
-      level: 5,
-      xp: 180,
-      totalXp: 1230,
-      createdAt: createdAt,
-      stats: { strength: 145, intellect: 320, health: 90, discipline: 210 }
+      name: 'Герой',
+      level: 1,
+      xp: 0,
+      totalXp: 0,
+      createdAt: dayKey(new Date(), 4),
+      stats: { strength: 0, intellect: 0, health: 0, discipline: 0 }
     },
-    habits: [
-      makeHabit('Зарядка 10 минут', 'strength', 'medium', 3, createdAt, yesterday),
-      makeHabit('Чтение 20 страниц', 'intellect', 'easy', 12, createdAt, todayKey),
-      makeHabit('Медитация', 'health', 'easy', 0, createdAt, null)
-    ],
+    habits: [],
     tasks: [],
     history: [],
     settings: { theme: 'light', dayResetHour: 4 }
   };
 }
 
-function makeHabit(title, stat, difficulty, streak, createdAt, lastDone) {
+function makeHabit(title, stat, difficulty) {
   return {
     id: String(Date.now()) + Math.random().toString(36).slice(2, 7),
     title: title,
     stat: stat,
     difficulty: difficulty,
     schedule: 'daily',
-    streak: streak,
-    bestStreak: streak,
-    lastDone: lastDone,
-    createdAt: createdAt,
+    streak: 0,
+    bestStreak: 0,
+    lastDone: null,
+    createdAt: today(),
     archived: false
   };
 }
@@ -198,6 +193,29 @@ function activeStreak(habit) {
   return habit.lastDone === dayBefore(today()) ? habit.streak : 0;
 }
 
+/**
+ * Сколько дней подряд человек что-то отмечал (FR-7.7).
+ * Сегодняшний день может быть ещё пустым — тогда отсчёт идёт от вчера,
+ * иначе серия обнулялась бы каждое утро.
+ */
+function appStreak() {
+  var days = {};
+  state.history.forEach(function (entry) {
+    days[entry.date] = true;
+  });
+
+  var cursor = today();
+  if (!days[cursor]) cursor = dayBefore(cursor);
+  if (!days[cursor]) return 0;
+
+  var count = 0;
+  while (days[cursor]) {
+    count += 1;
+    cursor = dayBefore(cursor);
+  }
+  return count;
+}
+
 /** Опыт за сегодня считаем из истории — счётчик пережил бы смену суток (раздел 7.3). */
 function xpToday() {
   var day = today();
@@ -213,9 +231,7 @@ function xpToday() {
  * Возвращает false, если начисление не состоялось.
  */
 function completeHabit(id) {
-  var habit = state.habits.find(function (item) {
-    return item.id === id;
-  });
+  var habit = findHabit(id);
 
   if (!habit || isDoneToday(habit)) return false;
 
@@ -265,6 +281,61 @@ function completeHabit(id) {
 }
 
 /**
+ * Создаёт привычку из черновика формы.
+ * Возвращает false, если создание не состоялось.
+ */
+function addHabit(title, stat, difficulty) {
+  var clean = title.trim().slice(0, MAX_TITLE_LENGTH);
+
+  if (!clean) {
+    showMessage('Введите название привычки');
+    return false;
+  }
+
+  // FR-4.7: список ограничен двадцатью привычками.
+  if (activeHabits().length >= MAX_HABITS) {
+    showMessage('Больше ' + MAX_HABITS + ' привычек не получится — список перестаёт помогать');
+    return false;
+  }
+
+  state.habits.push(makeHabit(clean, stat, difficulty));
+  saveState();
+  render();
+  showMessage('Привычка «' + clean + '» добавлена');
+  return true;
+}
+
+/**
+ * Удаляет привычку. Записи в истории остаются: они уже принесли опыт,
+ * и стирать их значило бы задним числом отнять заработанное.
+ */
+function removeHabit(id) {
+  var habit = findHabit(id);
+  if (!habit) return false;
+
+  state.habits = state.habits.filter(function (item) {
+    return item.id !== id;
+  });
+
+  saveState();
+  render();
+  showMessage('Привычка «' + habit.title + '» удалена');
+  return true;
+}
+
+function findHabit(id) {
+  return state.habits.find(function (item) {
+    return item.id === id;
+  });
+}
+
+function activeHabits() {
+  return state.habits.filter(function (habit) {
+    return !habit.archived;
+  });
+}
+
+/**
  * Повышает уровень, пока хватает опыта, и возвращает число новых уровней.
  * Цикл, а не условие: за одно действие можно взять несколько порогов (FR-2.5).
  * Остаток опыта переносится на следующий уровень (FR-2.4).
@@ -289,8 +360,12 @@ var messageTimer = null;
 
 var NODE_IDS = [
   'level', 'level-text', 'xp-value', 'xp-track', 'xp-fill',
-  'today-meta', 'habits', 'abilities', 'toast',
-  'levelup', 'levelup-badge', 'levelup-title', 'levelup-text', 'levelup-close'
+  'today-meta', 'habits', 'abilities', 'empty', 'toast',
+  'hero-name', 'app-streak', 'streak-pill', 'add-open',
+  'levelup', 'levelup-badge', 'levelup-title', 'levelup-text', 'levelup-close',
+  'confirm', 'confirm-text', 'confirm-cancel', 'confirm-delete',
+  'sheet', 'sheet-cancel', 'sheet-save', 'habit-title',
+  'stat-choices', 'diff-choices', 'preview-xp', 'preview-discipline'
 ];
 
 function cacheNodes() {
@@ -303,6 +378,11 @@ function renderCharacter() {
   var character = state.character;
   var need = xpToNextLevel(character.level);
   var percent = Math.round((character.xp / need) * 100);
+
+  var streak = appStreak();
+  nodes['hero-name'].textContent = character.name;
+  nodes['app-streak'].textContent = streak;
+  nodes['streak-pill'].hidden = streak === 0;
 
   nodes.level.textContent = character.level;
   nodes['level-text'].textContent = character.level;
@@ -374,6 +454,26 @@ function createFlameIcon() {
   return svg;
 }
 
+var TRASH_PATH = 'M3 5.5h14M8 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M5 5.5l.8 11a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9l.8-11';
+
+function createTrashIcon() {
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'icon-action');
+  svg.setAttribute('viewBox', '0 0 20 20');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+
+  var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', TRASH_PATH);
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '1.5');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+
+  svg.appendChild(path);
+  return svg;
+}
+
 function createHabitCard(habit) {
   var stat = STATS[habit.stat];
   var done = isDoneToday(habit);
@@ -407,6 +507,9 @@ function createHabitCard(habit) {
   info.append(title, tags);
   row.append(info);
 
+  var actions = document.createElement('div');
+  actions.className = 'habit__actions';
+
   if (habit.streak > 0) {
     var streak = document.createElement('p');
     streak.className = 'pill pill--fire';
@@ -419,8 +522,20 @@ function createHabitCard(habit) {
     hint.textContent = 'дней подряд';
 
     streak.append(createFlameIcon(), count, hint);
-    row.append(streak);
+    actions.append(streak);
   }
+
+  var remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'habit__delete';
+  remove.setAttribute('aria-label', 'Удалить привычку «' + habit.title + '»');
+  remove.append(createTrashIcon());
+  remove.addEventListener('click', function () {
+    askDelete(habit.id);
+  });
+
+  actions.append(remove);
+  row.append(actions);
 
   var button = document.createElement('button');
   button.type = 'button';
@@ -439,14 +554,15 @@ function createHabitCard(habit) {
 }
 
 function renderHabits() {
-  var visible = state.habits.filter(function (habit) {
-    return !habit.archived;
-  });
+  var visible = activeHabits();
 
   /* Формат подзаголовка взят из макета: выполнено, всего и опыт за день
      одной строкой, без отдельного блока про лимит. */
   var doneCount = visible.filter(isDoneToday).length;
   nodes['today-meta'].textContent = doneCount + ' из ' + visible.length + ' · ' + xpToday() + '/' + DAILY_LIMIT;
+
+  // NFR-4.5: пустой список объясняет, что делать дальше.
+  nodes.empty.hidden = visible.length > 0;
 
   nodes.habits.replaceChildren();
   visible.forEach(function (habit) {
@@ -489,6 +605,112 @@ function hideLevelUp() {
   nodes.levelup.hidden = true;
 }
 
+/* --- Лист создания привычки --- */
+
+var draft = { stat: 'strength', difficulty: 'medium' };
+
+function createChoice(id, group, selected, label, extra) {
+  var button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'choice choice--' + id;
+  button.setAttribute('role', 'radio');
+  button.setAttribute('aria-checked', String(selected));
+
+  if (extra) {
+    var value = document.createElement('span');
+    value.className = 'choice__xp';
+    value.textContent = extra;
+
+    var caption = document.createElement('span');
+    caption.className = 'choice__label';
+    caption.textContent = label;
+
+    /* Из двух отдельных строк («+25» и «Средняя») складывается невнятное
+       имя кнопки, поэтому задаём его явно. */
+    button.setAttribute('aria-label', label + ', ' + extra + ' опыта');
+    button.append(value, caption);
+  } else {
+    button.textContent = label;
+  }
+
+  button.addEventListener('click', function () {
+    draft[group] = id;
+    renderSheet();
+  });
+
+  return button;
+}
+
+function renderSheet() {
+  nodes['stat-choices'].replaceChildren();
+  Object.keys(STATS).forEach(function (key) {
+    nodes['stat-choices'].append(createChoice(key, 'stat', draft.stat === key, STATS[key].label, null));
+  });
+
+  nodes['diff-choices'].replaceChildren();
+  Object.keys(DIFFICULTY).forEach(function (key) {
+    var level = DIFFICULTY[key];
+    nodes['diff-choices'].append(
+      createChoice(key, 'difficulty', draft.difficulty === key, level.label, '+' + level.xp)
+    );
+  });
+
+  /* У новой привычки серии нет, поэтому множитель равен единице —
+     показываем базовый опыт сложности без обещаний. */
+  var xp = DIFFICULTY[draft.difficulty].xp;
+  nodes['preview-xp'].textContent = '+' + xp;
+  nodes['preview-discipline'].textContent = '+' + disciplineFor(xp);
+}
+
+function openSheet() {
+  draft = { stat: 'strength', difficulty: 'medium' };
+  nodes['habit-title'].value = '';
+  renderSheet();
+  nodes.sheet.hidden = false;
+  nodes['habit-title'].focus();
+}
+
+function closeSheet() {
+  nodes.sheet.hidden = true;
+  nodes['add-open'].focus();
+}
+
+function saveDraft() {
+  if (addHabit(nodes['habit-title'].value, draft.stat, draft.difficulty)) {
+    closeSheet();
+  } else {
+    nodes['habit-title'].focus();
+  }
+}
+
+/* --- Подтверждение удаления (FR-4.3, NFR-4.4) --- */
+
+var pendingDelete = null;
+
+function askDelete(id) {
+  var habit = findHabit(id);
+  if (!habit) return;
+
+  pendingDelete = id;
+  nodes['confirm-text'].textContent =
+    'Привычка «' + habit.title + '» исчезнет из списка' +
+    (habit.streak > 0 ? ', серия в ' + habit.streak + ' дн. будет потеряна' : '') +
+    '. Опыт и уровень персонажа останутся при вас.';
+
+  nodes.confirm.hidden = false;
+  nodes['confirm-cancel'].focus();
+}
+
+function closeConfirm() {
+  pendingDelete = null;
+  nodes.confirm.hidden = true;
+}
+
+function confirmDelete() {
+  if (pendingDelete) removeHabit(pendingDelete);
+  closeConfirm();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   cacheNodes();
   state = loadState();
@@ -499,7 +721,29 @@ document.addEventListener('DOMContentLoaded', function () {
   nodes.levelup.addEventListener('click', function (event) {
     if (event.target === nodes.levelup) hideLevelUp();
   });
+
+  nodes['add-open'].addEventListener('click', openSheet);
+  nodes['sheet-cancel'].addEventListener('click', closeSheet);
+  nodes['sheet-save'].addEventListener('click', saveDraft);
+  nodes.sheet.addEventListener('click', function (event) {
+    if (event.target === nodes.sheet) closeSheet();
+  });
+  nodes['habit-title'].addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') saveDraft();
+  });
+
+  nodes['confirm-cancel'].addEventListener('click', closeConfirm);
+  nodes['confirm-delete'].addEventListener('click', confirmDelete);
+  nodes.confirm.addEventListener('click', function (event) {
+    if (event.target === nodes.confirm) closeConfirm();
+  });
+
+  /* Escape закрывает то, что открыто сверху: сначала подтверждение,
+     потом лист, потом окно уровня. */
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && !nodes.levelup.hidden) hideLevelUp();
+    if (event.key !== 'Escape') return;
+    if (!nodes.confirm.hidden) closeConfirm();
+    else if (!nodes.sheet.hidden) closeSheet();
+    else if (!nodes.levelup.hidden) hideLevelUp();
   });
 });
