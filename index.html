@@ -15,6 +15,52 @@
   </head>
   <body>
     <div class="app">
+      <aside class="sidebar">
+        <div class="sidebar__brand">
+          <span class="sidebar__logo" aria-hidden="true"></span>
+          <span class="sidebar__name">GameLife</span>
+        </div>
+
+        <nav class="sidebar__nav" aria-label="Разделы">
+          <span class="navitem navitem--active" aria-current="page">
+            <span class="navitem__mark" aria-hidden="true"></span>
+            Панель
+          </span>
+          <span class="navitem" aria-disabled="true">
+            <span class="navitem__mark navitem__mark--round" aria-hidden="true"></span>
+            Каталог
+            <span class="navitem__tag">v0.4</span>
+          </span>
+          <span class="navitem" aria-disabled="true">
+            <span class="navitem__mark" aria-hidden="true"></span>
+            Задачи
+            <span class="navitem__tag">v0.5</span>
+          </span>
+          <span class="navitem" aria-disabled="true">
+            <span class="navitem__mark navitem__mark--round" aria-hidden="true"></span>
+            Цели и боссы
+            <span class="navitem__tag">v0.5</span>
+          </span>
+          <span class="navitem" aria-disabled="true">
+            <span class="navitem__mark" aria-hidden="true"></span>
+            Прогресс
+            <span class="navitem__tag">v0.6</span>
+          </span>
+          <span class="navitem" aria-disabled="true">
+            <span class="navitem__mark navitem__mark--round" aria-hidden="true"></span>
+            Настройки
+            <span class="navitem__tag">v0.2</span>
+          </span>
+        </nav>
+
+        <p class="sidebar__note">Разделы с пометкой релиза спроектированы в техническом задании и появятся позже.</p>
+
+        <div class="sidebar__streak">
+          <p class="sidebar__streak-label">Дней подряд</p>
+          <p class="sidebar__streak-value" id="sidebar-streak">0 дней</p>
+        </div>
+      </aside>
+
       <header class="hero">
         <div class="hero__top">
           <div class="hero__greeting">

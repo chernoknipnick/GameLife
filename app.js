@@ -245,6 +245,17 @@ function appStreak() {
   return count;
 }
 
+/** Русское склонение: 1 день, 2 дня, 5 дней. */
+function pluralDays(count) {
+  var tail = count % 100;
+  if (tail >= 11 && tail <= 14) return count + ' дней';
+
+  var last = count % 10;
+  if (last === 1) return count + ' день';
+  if (last >= 2 && last <= 4) return count + ' дня';
+  return count + ' дней';
+}
+
 /** Опыт за сегодня считаем из истории — счётчик пережил бы смену суток (раздел 7.3). */
 function xpToday() {
   var day = today();
@@ -407,7 +418,7 @@ var messageTimer = null;
 var NODE_IDS = [
   'level', 'level-text', 'xp-value', 'xp-track', 'xp-fill',
   'today-meta', 'habits', 'abilities', 'empty', 'toast',
-  'hero-name', 'app-streak', 'streak-pill', 'add-open', 'reset-open',
+  'hero-name', 'app-streak', 'streak-pill', 'sidebar-streak', 'add-open', 'reset-open',
   'levelup', 'levelup-badge', 'levelup-title', 'levelup-text', 'levelup-close',
   'confirm', 'confirm-title', 'confirm-text', 'confirm-cancel', 'confirm-delete',
   'sheet', 'sheet-cancel', 'sheet-save', 'habit-title',
@@ -433,6 +444,7 @@ function renderCharacter() {
   nodes['hero-name'].textContent = character.name;
   nodes['app-streak'].textContent = streak;
   nodes['streak-pill'].hidden = streak === 0;
+  nodes['sidebar-streak'].textContent = pluralDays(streak);
 
   nodes.level.textContent = character.level;
   nodes['level-text'].textContent = character.level;
