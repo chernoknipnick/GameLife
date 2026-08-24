@@ -150,6 +150,76 @@
           </div>
         </div>
       </div>
+      <section class="onboarding" id="onboarding" hidden>
+        <div class="onboarding__inner">
+          <div class="onboarding__steps" aria-hidden="true">
+            <span class="onboarding__step" id="onb-bar-0"></span>
+            <span class="onboarding__step" id="onb-bar-1"></span>
+            <span class="onboarding__step" id="onb-bar-2"></span>
+          </div>
+
+          <div class="onboarding__panel" id="onb-step-0">
+            <span class="onboarding__mark" aria-hidden="true"></span>
+            <h1 class="onboarding__title">Реальные дела — игровой прогресс</h1>
+            <p class="onboarding__text">
+              Каждое выполненное дело даёт опыт персонажу и качает характеристику.
+              Пропуск дня ничего не отнимает.
+            </p>
+
+            <ul class="facts">
+              <li class="fact">
+                <span class="fact__value fact__value--strength">+25</span>
+                <span class="fact__label">опыта за среднюю привычку</span>
+              </li>
+              <li class="fact">
+                <span class="fact__value fact__value--intellect">×1.5</span>
+                <span class="fact__label">множитель за серию в 30 дней</span>
+              </li>
+              <li class="fact">
+                <span class="fact__value fact__value--health">0</span>
+                <span class="fact__label">наказаний за пропуск</span>
+              </li>
+            </ul>
+
+            <div class="onboarding__actions">
+              <button class="btn btn--primary" type="button" id="onb-begin">Начать</button>
+              <button class="btn btn--quiet" type="button" id="onb-skip">Пропустить</button>
+            </div>
+          </div>
+
+          <div class="onboarding__panel" id="onb-step-1" hidden>
+            <h2 class="onboarding__title">Имя персонажа</h2>
+            <p class="onboarding__text">Можно изменить позже.</p>
+
+            <label class="visually-hidden" for="onb-name">Имя персонажа</label>
+            <input
+              class="field__input"
+              id="onb-name"
+              type="text"
+              maxlength="24"
+              autocomplete="off"
+              placeholder="Герой"
+            />
+
+            <div class="onboarding__actions onboarding__actions--row">
+              <button class="btn btn--ghost" type="button" id="onb-back-1">Назад</button>
+              <button class="btn btn--primary" type="button" id="onb-next">Далее</button>
+            </div>
+          </div>
+
+          <div class="onboarding__panel" id="onb-step-2" hidden>
+            <h2 class="onboarding__title">Стартовые привычки</h2>
+            <p class="onboarding__text" id="onb-hint">Выберите от 3 до 5 — остальное добавите позже.</p>
+
+            <div class="templates" id="onb-templates" role="group" aria-label="Шаблоны привычек"></div>
+
+            <div class="onboarding__actions onboarding__actions--row">
+              <button class="btn btn--ghost" type="button" id="onb-back-2">Назад</button>
+              <button class="btn btn--primary" type="button" id="onb-finish">Создать персонажа</button>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <script src="app.js" defer></script>

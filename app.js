@@ -1,12 +1,13 @@
 'use strict';
 
-/* GameLife v0.1 — задачи 3—6 Фазы 1.
+/* GameLife v0.1 — задачи 3—6, 8 и 10 Фазы 1.
 
    Покрывает FR-2.4—FR-2.6 (уровни), FR-3.4, FR-3.4a, FR-3.5 (опыт и
    уровни характеристик), FR-4.2—FR-4.7 (привычки: создание, удаление,
    сложности, одно выполнение в сутки, лимит в 20), FR-7.1—FR-7.4
    (стрики), NFR-2.1 (данные переживают закрытие браузера), NFR-4.4
-   (удаление и сброс спрашивают подтверждение), NFR-4.5 (пустое
+   (удаление и сброс спрашивают подтверждение), FR-1.1—FR-1.4
+   (онбординг), NFR-4.5 (пустое
    состояние), FR-15.1 (сброс прогресса),
    раздел 7 (баланс).
 
@@ -15,7 +16,8 @@
    чтобы задачи 6–8 и переход на React в v0.3 не ломали сохранённые
    данные.
 
-   Чего ещё нет: онбординг (задача 10). */
+   Из плана Фазы 1 остаётся задача 2 в части десктопной раскладки в две
+   колонки (раздел 8.3 ТЗ). */
 
 /* --- Правила игры (раздел 7 ТЗ) --- */
 
@@ -58,6 +60,20 @@ function statLevel(xp) {
 function statProgress(xp) {
   return xp % STAT_LEVEL_STEP;
 }
+
+/* Шаблоны для онбординга (FR-1.3). Разложены по характеристикам, чтобы
+   выбор читался как набор направлений, а не как список дел. */
+var TEMPLATES = [
+  { title: 'Зарядка 10 минут', stat: 'strength', difficulty: 'medium' },
+  { title: 'Тренировка в зале', stat: 'strength', difficulty: 'hard' },
+  { title: 'Чтение 20 страниц', stat: 'intellect', difficulty: 'easy' },
+  { title: 'Учебный курс 30 минут', stat: 'intellect', difficulty: 'medium' },
+  { title: 'Медитация', stat: 'health', difficulty: 'easy' },
+  { title: 'Восемь стаканов воды', stat: 'health', difficulty: 'easy' }
+];
+
+var MIN_STARTER_HABITS = 3;
+var MAX_STARTER_HABITS = 5;
 
 /** Порог опыта до следующего уровня. */
 function xpToNextLevel(level) {
@@ -114,6 +130,11 @@ function dayBefore(key) {
 
 var state = null;
 
+/* Онбординг показывается только тому, у кого нет сохранения: у игрока
+   с прогрессом он был бы навязчивым. Отдельного флага в состоянии нет
+   намеренно — раздел 6.1 ТЗ его не описывает. */
+var isNewPlayer = false;
+
 /* Новый игрок начинает с чистого листа: первый уровень, пустой список
    с подсказкой. Захардкоженный демо-набор убран — привычки заводятся
    вручную, а с задачей 10 их будет предлагать онбординг. */
@@ -160,15 +181,22 @@ function loadState() {
     return createInitialState();
   }
 
-  if (!raw) return createInitialState();
+  if (!raw) {
+    isNewPlayer = true;
+    return createInitialState();
+  }
 
   try {
     var parsed = JSON.parse(raw);
-    if (!parsed || parsed.version !== SCHEMA_VERSION) return createInitialState();
+    if (!parsed || parsed.version !== SCHEMA_VERSION) {
+      isNewPlayer = true;
+      return createInitialState();
+    }
     return parsed;
   } catch (error) {
     // Битые данные лучше заменить, чем уронить приложение.
     console.warn('Сохранение повреждено, начинаем заново:', error);
+    isNewPlayer = true;
     return createInitialState();
   }
 }
@@ -332,7 +360,8 @@ function resetProgress() {
   state = createInitialState();
   saveState();
   render();
-  showMessage('Прогресс сброшен. Чистый лист.');
+  // Сброс возвращает в начало целиком, включая знакомство и выбор имени.
+  openOnboarding();
 }
 
 /** Есть ли что сбрасывать: на нетронутом состоянии кнопка только мешает. */
@@ -382,7 +411,11 @@ var NODE_IDS = [
   'levelup', 'levelup-badge', 'levelup-title', 'levelup-text', 'levelup-close',
   'confirm', 'confirm-title', 'confirm-text', 'confirm-cancel', 'confirm-delete',
   'sheet', 'sheet-cancel', 'sheet-save', 'habit-title',
-  'stat-choices', 'diff-choices', 'preview-xp', 'preview-discipline'
+  'stat-choices', 'diff-choices', 'preview-xp', 'preview-discipline',
+  'onboarding', 'onb-bar-0', 'onb-bar-1', 'onb-bar-2',
+  'onb-step-0', 'onb-step-1', 'onb-step-2',
+  'onb-begin', 'onb-skip', 'onb-name', 'onb-back-1', 'onb-next',
+  'onb-hint', 'onb-templates', 'onb-back-2', 'onb-finish'
 ];
 
 function cacheNodes() {
@@ -752,11 +785,150 @@ function askReset() {
   );
 }
 
+/* --- Онбординг (FR-1.1 — FR-1.4) --- */
+
+var onboarding = { step: 0, name: '', picked: [] };
+
+function createCheckIcon() {
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 10 10');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+
+  var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M1 5l2.6 2.6L9 2');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '2');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+
+  svg.appendChild(path);
+  return svg;
+}
+
+function createTemplateCard(index) {
+  var template = TEMPLATES[index];
+  var stat = STATS[template.stat];
+  var picked = onboarding.picked.indexOf(index) >= 0;
+
+  var button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'template';
+  button.setAttribute('aria-pressed', String(picked));
+
+  var box = document.createElement('span');
+  box.className = 'template__box';
+  box.append(createCheckIcon());
+
+  var body = document.createElement('span');
+  body.className = 'template__body';
+
+  var title = document.createElement('span');
+  title.className = 'template__title';
+  title.textContent = template.title;
+
+  var meta = document.createElement('span');
+  meta.className = 'template__meta';
+  meta.textContent =
+    DIFFICULTY[template.difficulty].label + ' · +' + DIFFICULTY[template.difficulty].xp + ' опыта';
+
+  body.append(title, meta);
+
+  var chip = document.createElement('span');
+  chip.className = 'template__stat chip chip--' + template.stat;
+  chip.textContent = stat.abbr;
+
+  button.append(box, body, chip);
+  button.addEventListener('click', function () {
+    toggleTemplate(index);
+  });
+
+  return button;
+}
+
+function toggleTemplate(index) {
+  var at = onboarding.picked.indexOf(index);
+
+  if (at >= 0) {
+    onboarding.picked.splice(at, 1);
+  } else if (onboarding.picked.length < MAX_STARTER_HABITS) {
+    onboarding.picked.push(index);
+  } else {
+    showMessage('Для начала хватит ' + MAX_STARTER_HABITS + ' привычек — остальные добавите позже');
+    return;
+  }
+
+  renderOnboarding();
+}
+
+function renderOnboarding() {
+  var step = onboarding.step;
+
+  [0, 1, 2].forEach(function (index) {
+    nodes['onb-bar-' + index].className =
+      'onboarding__step' + (index <= step ? ' onboarding__step--done' : '');
+    nodes['onb-step-' + index].hidden = index !== step;
+  });
+
+  nodes['onb-templates'].replaceChildren();
+  TEMPLATES.forEach(function (_, index) {
+    nodes['onb-templates'].append(createTemplateCard(index));
+  });
+
+  var count = onboarding.picked.length;
+  var enough = count >= MIN_STARTER_HABITS && count <= MAX_STARTER_HABITS;
+
+  nodes['onb-hint'].textContent = enough
+    ? 'Выбрано ' + count + '. Остальное добавите позже.'
+    : 'Выберите от ' + MIN_STARTER_HABITS + ' до ' + MAX_STARTER_HABITS + ' — остальное добавите позже.';
+
+  nodes['onb-finish'].disabled = !enough;
+}
+
+function openOnboarding() {
+  onboarding = { step: 0, name: '', picked: [] };
+  nodes['onb-name'].value = '';
+  renderOnboarding();
+  nodes.onboarding.hidden = false;
+  nodes['onb-begin'].focus();
+}
+
+function goToStep(step) {
+  onboarding.step = step;
+  renderOnboarding();
+
+  if (step === 1) nodes['onb-name'].focus();
+  else if (step === 2) nodes['onb-templates'].querySelector('.template').focus();
+}
+
+/** Завершает знакомство: имя и выбранные шаблоны переносятся в состояние. */
+function finishOnboarding(indexes) {
+  var name = nodes['onb-name'].value.trim().slice(0, 24);
+  if (name) state.character.name = name;
+
+  indexes.forEach(function (index) {
+    var template = TEMPLATES[index];
+    state.habits.push(makeHabit(template.title, template.stat, template.difficulty));
+  });
+
+  saveState();
+  nodes.onboarding.hidden = true;
+  render();
+
+  showMessage(
+    indexes.length > 0
+      ? 'Готово, ' + state.character.name + '. Отмечайте выполненное — персонаж будет расти.'
+      : 'Готово. Добавьте первую привычку, когда будете готовы.'
+  );
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   cacheNodes();
   state = loadState();
-  saveState(); // закрепляем стартовый набор, иначе id привычек меняются при каждой загрузке
+  saveState(); // закрепляем стартовое состояние, иначе id привычек меняются при каждой загрузке
   render();
+
+  if (isNewPlayer) openOnboarding();
 
   nodes['levelup-close'].addEventListener('click', hideLevelUp);
   nodes.levelup.addEventListener('click', function (event) {
@@ -776,6 +948,29 @@ document.addEventListener('DOMContentLoaded', function () {
   nodes['confirm-cancel'].addEventListener('click', closeConfirm);
   nodes['confirm-delete'].addEventListener('click', runPendingAction);
   nodes['reset-open'].addEventListener('click', askReset);
+
+  nodes['onb-begin'].addEventListener('click', function () {
+    goToStep(1);
+  });
+  // FR-1.4: выйти можно на первом же экране, без выбора привычек.
+  nodes['onb-skip'].addEventListener('click', function () {
+    finishOnboarding([]);
+  });
+  nodes['onb-back-1'].addEventListener('click', function () {
+    goToStep(0);
+  });
+  nodes['onb-next'].addEventListener('click', function () {
+    goToStep(2);
+  });
+  nodes['onb-name'].addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') goToStep(2);
+  });
+  nodes['onb-back-2'].addEventListener('click', function () {
+    goToStep(1);
+  });
+  nodes['onb-finish'].addEventListener('click', function () {
+    finishOnboarding(onboarding.picked);
+  });
   nodes.confirm.addEventListener('click', function (event) {
     if (event.target === nodes.confirm) closeConfirm();
   });

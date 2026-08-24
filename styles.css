@@ -477,7 +477,8 @@ body {
   left: 16px;
   right: 16px;
   bottom: 20px;
-  z-index: 10;
+  /* Выше онбординга и диалогов: сообщения нужны и поверх них. */
+  z-index: 50;
   max-width: 440px;
   margin: 0 auto;
   padding: 12px 16px;
@@ -916,4 +917,262 @@ body {
   .sheet__panel {
     animation: none;
   }
+}
+
+/* --- Онбординг (FR-1.1 — FR-1.4) --- */
+
+.onboarding {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  background: #f7f6f3;
+}
+
+.onboarding[hidden] {
+  display: none;
+}
+
+.onboarding__inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  min-height: 100%;
+  padding: 24px 20px 28px;
+}
+
+.onboarding__steps {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 28px;
+}
+
+.onboarding__step {
+  flex: 1;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--line);
+}
+
+.onboarding__step--done {
+  background: var(--green);
+}
+
+.onboarding__panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.onboarding__panel[hidden] {
+  display: none;
+}
+
+.onboarding__mark {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 28px;
+  border-radius: 18px;
+  background: var(--green);
+}
+
+/* Ромб внутри метки — тот же знак, что на аватаре в шапке. */
+.onboarding__mark::after {
+  content: '';
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #fff;
+  transform: rotate(45deg);
+}
+
+.onboarding__title {
+  margin: 0 0 12px;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.onboarding__text {
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.onboarding__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 28px;
+}
+
+.onboarding__actions--row {
+  flex-direction: row;
+  gap: 10px;
+}
+
+.onboarding__actions--row .btn--ghost {
+  width: 100px;
+  flex: none;
+}
+
+.onboarding__actions--row .btn--primary {
+  flex: 1;
+}
+
+.btn--quiet {
+  height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.btn--quiet:hover {
+  color: var(--ink);
+}
+
+/* --- Что даёт игра: три факта на первом шаге --- */
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fact {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.fact__value {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 12px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.fact__value--strength {
+  background: var(--strength-bg);
+  color: var(--strength-fg);
+}
+
+.fact__value--intellect {
+  background: var(--intellect-bg);
+  color: var(--intellect-fg);
+}
+
+.fact__value--health {
+  background: var(--health-bg);
+  color: var(--health-fg);
+}
+
+.fact__label {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+/* --- Шаблоны стартовых привычек --- */
+
+.templates {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.template {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.template[aria-pressed='true'] {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.template:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.template__box {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border: 2px solid var(--line-strong);
+  border-radius: 7px;
+  color: transparent;
+}
+
+.template[aria-pressed='true'] .template__box {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}
+
+.template__box svg {
+  width: 11px;
+  height: 11px;
+}
+
+.template__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.template__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.template__meta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.template__stat {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
 }
