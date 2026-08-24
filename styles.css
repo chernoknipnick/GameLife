@@ -882,6 +882,26 @@ body {
   border-color: var(--danger-dark);
 }
 
+/* Сброс прогресса не должен соперничать за внимание с ежедневными
+   действиями, поэтому он текстовый и приглушённый. */
+.btn--reset {
+  height: 44px;
+  margin-top: 20px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.btn--reset:hover {
+  color: var(--danger);
+}
+
+.btn--reset[hidden] {
+  display: none;
+}
+
 .modal__actions {
   display: flex;
   gap: 10px;

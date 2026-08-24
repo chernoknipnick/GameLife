@@ -6,7 +6,8 @@
    уровни характеристик), FR-4.2—FR-4.7 (привычки: создание, удаление,
    сложности, одно выполнение в сутки, лимит в 20), FR-7.1—FR-7.4
    (стрики), NFR-2.1 (данные переживают закрытие браузера), NFR-4.4
-   (удаление спрашивает подтверждение), NFR-4.5 (пустое состояние),
+   (удаление и сброс спрашивают подтверждение), NFR-4.5 (пустое
+   состояние), FR-15.1 (сброс прогресса),
    раздел 7 (баланс).
 
    Формат хранения повторяет раздел 6.1 ТЗ, включая поля, которые пока
@@ -14,7 +15,7 @@
    чтобы задачи 6–8 и переход на React в v0.3 не ломали сохранённые
    данные.
 
-   Чего ещё нет: сброс прогресса (задача 8), онбординг (задача 10). */
+   Чего ещё нет: онбординг (задача 10). */
 
 /* --- Правила игры (раздел 7 ТЗ) --- */
 
@@ -323,6 +324,22 @@ function removeHabit(id) {
   return true;
 }
 
+/**
+ * Возвращает всё к состоянию нового игрока (FR-15.1).
+ * Действие необратимое, поэтому вызывается только после подтверждения.
+ */
+function resetProgress() {
+  state = createInitialState();
+  saveState();
+  render();
+  showMessage('Прогресс сброшен. Чистый лист.');
+}
+
+/** Есть ли что сбрасывать: на нетронутом состоянии кнопка только мешает. */
+function hasProgress() {
+  return state.habits.length > 0 || state.history.length > 0 || state.character.totalXp > 0;
+}
+
 function findHabit(id) {
   return state.habits.find(function (item) {
     return item.id === id;
@@ -361,9 +378,9 @@ var messageTimer = null;
 var NODE_IDS = [
   'level', 'level-text', 'xp-value', 'xp-track', 'xp-fill',
   'today-meta', 'habits', 'abilities', 'empty', 'toast',
-  'hero-name', 'app-streak', 'streak-pill', 'add-open',
+  'hero-name', 'app-streak', 'streak-pill', 'add-open', 'reset-open',
   'levelup', 'levelup-badge', 'levelup-title', 'levelup-text', 'levelup-close',
-  'confirm', 'confirm-text', 'confirm-cancel', 'confirm-delete',
+  'confirm', 'confirm-title', 'confirm-text', 'confirm-cancel', 'confirm-delete',
   'sheet', 'sheet-cancel', 'sheet-save', 'habit-title',
   'stat-choices', 'diff-choices', 'preview-xp', 'preview-discipline'
 ];
@@ -563,6 +580,7 @@ function renderHabits() {
 
   // NFR-4.5: пустой список объясняет, что делать дальше.
   nodes.empty.hidden = visible.length > 0;
+  nodes['reset-open'].hidden = !hasProgress();
 
   nodes.habits.replaceChildren();
   visible.forEach(function (habit) {
@@ -683,32 +701,55 @@ function saveDraft() {
   }
 }
 
-/* --- Подтверждение удаления (FR-4.3, NFR-4.4) --- */
+/* --- Подтверждение необратимых действий (FR-4.3, FR-15.1, NFR-4.4) --- */
 
-var pendingDelete = null;
+var pendingAction = null;
+
+function askConfirm(title, text, buttonLabel, action) {
+  pendingAction = action;
+  nodes['confirm-title'].textContent = title;
+  nodes['confirm-text'].textContent = text;
+  nodes['confirm-delete'].textContent = buttonLabel;
+
+  nodes.confirm.hidden = false;
+  // Фокус на отмене: подтверждение необратимо, случайный Enter не должен его запускать.
+  nodes['confirm-cancel'].focus();
+}
+
+function closeConfirm() {
+  pendingAction = null;
+  nodes.confirm.hidden = true;
+}
+
+function runPendingAction() {
+  var action = pendingAction;
+  closeConfirm();
+  if (action) action();
+}
 
 function askDelete(id) {
   var habit = findHabit(id);
   if (!habit) return;
 
-  pendingDelete = id;
-  nodes['confirm-text'].textContent =
+  askConfirm(
+    'Удалить привычку?',
     'Привычка «' + habit.title + '» исчезнет из списка' +
-    (habit.streak > 0 ? ', серия в ' + habit.streak + ' дн. будет потеряна' : '') +
-    '. Опыт и уровень персонажа останутся при вас.';
-
-  nodes.confirm.hidden = false;
-  nodes['confirm-cancel'].focus();
+      (habit.streak > 0 ? ', серия в ' + habit.streak + ' дн. будет потеряна' : '') +
+      '. Опыт и уровень персонажа останутся при вас.',
+    'Удалить',
+    function () {
+      removeHabit(id);
+    }
+  );
 }
 
-function closeConfirm() {
-  pendingDelete = null;
-  nodes.confirm.hidden = true;
-}
-
-function confirmDelete() {
-  if (pendingDelete) removeHabit(pendingDelete);
-  closeConfirm();
+function askReset() {
+  askConfirm(
+    'Сбросить весь прогресс?',
+    'Персонаж вернётся на первый уровень, характеристики обнулятся, привычки и история выполнений будут удалены. Отменить это будет нельзя.',
+    'Сбросить',
+    resetProgress
+  );
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -733,7 +774,8 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   nodes['confirm-cancel'].addEventListener('click', closeConfirm);
-  nodes['confirm-delete'].addEventListener('click', confirmDelete);
+  nodes['confirm-delete'].addEventListener('click', runPendingAction);
+  nodes['reset-open'].addEventListener('click', askReset);
   nodes.confirm.addEventListener('click', function (event) {
     if (event.target === nodes.confirm) closeConfirm();
   });
