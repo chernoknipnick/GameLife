@@ -16,12 +16,13 @@
    чтобы задачи 6–8 и переход на React в v0.3 не ломали сохранённые
    данные.
 
-   Из плана Фазы 1 остаётся задача 2 в части десктопной раскладки в две
+   План Фазы 1 закрыт целиком, включая десктопную раскладку в две
    колонки (раздел 8.3 ТЗ). */
 
 /* --- Правила игры (раздел 7 ТЗ) --- */
 
 var STORAGE_KEY = 'gamelife';
+var BACKUP_KEY = 'gamelife.backup';
 var SCHEMA_VERSION = 1;
 var DAILY_LIMIT = 500;
 var MAX_HABITS = 20; // FR-4.7
@@ -171,6 +172,105 @@ function makeHabit(title, stat, difficulty) {
   };
 }
 
+/* Разбор JSON ловит только синтаксический мусор. Строка вида
+   {"version":1} разберётся успешно и уронит отрисовку на первом же
+   обращении к character — причём навсегда: испорченное значение
+   останется в хранилище и уронит приложение при каждой загрузке.
+   Поэтому проверяем ещё и форму. */
+
+function isFiniteNumber(value) {
+  return typeof value === 'number' && isFinite(value);
+}
+
+function looksLikeState(value) {
+  if (!value || typeof value !== 'object') return false;
+  if (!Array.isArray(value.habits) || !Array.isArray(value.history)) return false;
+
+  var character = value.character;
+  if (!character || typeof character !== 'object') return false;
+  if (!isFiniteNumber(character.level) || !isFiniteNumber(character.xp)) return false;
+  if (!character.stats || typeof character.stats !== 'object') return false;
+
+  return ALL_STATS.every(function (key) {
+    return isFiniteNumber(character.stats[key]);
+  });
+}
+
+/**
+ * Дотягивает сохранение до полной формы раздела 6.1.
+ * Общая форма уже проверена; здесь чинятся мелочи, из-за которых
+ * выбрасывать весь прогресс было бы нечестно.
+ */
+function normalizeState(loaded) {
+  var base = createInitialState();
+
+  if (typeof loaded.character.name !== 'string' || !loaded.character.name.trim()) {
+    loaded.character.name = base.character.name;
+  }
+  if (!isFiniteNumber(loaded.character.totalXp)) {
+    loaded.character.totalXp = loaded.character.xp;
+  }
+  if (!Array.isArray(loaded.tasks)) loaded.tasks = [];
+
+  if (!loaded.settings || typeof loaded.settings !== 'object') {
+    loaded.settings = base.settings;
+  }
+
+  /* Час смены суток участвует в каждом расчёте даты: мусор здесь сломал
+     бы и стрики, и дневной лимит. */
+  var hour = loaded.settings.dayResetHour;
+  if (!isFiniteNumber(hour) || hour < 0 || hour > 23) {
+    loaded.settings.dayResetHour = base.settings.dayResetHour;
+  }
+
+  /* Привычка с неизвестной характеристикой или сложностью уронит
+     карточку на STATS[stat].label, поэтому такие записи отбрасываются. */
+  loaded.habits = loaded.habits.filter(function (habit) {
+    return (
+      habit &&
+      typeof habit.title === 'string' &&
+      STATS[habit.stat] !== undefined &&
+      DIFFICULTY[habit.difficulty] !== undefined
+    );
+  });
+
+  loaded.habits.forEach(function (habit) {
+    if (!isFiniteNumber(habit.streak)) habit.streak = 0;
+    if (!isFiniteNumber(habit.bestStreak)) habit.bestStreak = habit.streak;
+    if (typeof habit.lastDone !== 'string') habit.lastDone = null;
+    habit.archived = habit.archived === true;
+  });
+
+  loaded.history = loaded.history.filter(function (entry) {
+    return entry && typeof entry.date === 'string' && isFiniteNumber(entry.xp);
+  });
+
+  return loaded;
+}
+
+/* Сообщение, которое надо показать, когда экран освободится: во время
+   онбординга всплывающую подсказку всё равно не видно. */
+var pendingNotice = null;
+
+/**
+ * Начинает с нуля, но не молча: непригодное сохранение уезжает в
+ * запасной ключ, а игрок получает предупреждение. Без этого первая же
+ * смена SCHEMA_VERSION в v0.2 стёрла бы прогресс всех, кто играл в v0.1.
+ */
+function startFresh(raw, reason) {
+  console.warn(reason);
+
+  try {
+    window.localStorage.setItem(BACKUP_KEY, raw);
+    pendingNotice = 'Прежнее сохранение не удалось прочитать. Копия убрана в «' + BACKUP_KEY + '».';
+  } catch (error) {
+    console.warn('Не удалось сохранить копию:', error);
+  }
+
+  isNewPlayer = true;
+  return createInitialState();
+}
+
 function loadState() {
   var raw;
   try {
@@ -178,6 +278,8 @@ function loadState() {
   } catch (error) {
     // Приватный режим или запрет хранилища: играем без сохранения.
     console.warn('Хранилище недоступно, прогресс не сохранится:', error);
+    // Знакомство всё равно нужно: без него человек видит пустой экран без объяснений.
+    isNewPlayer = true;
     return createInitialState();
   }
 
@@ -186,19 +288,25 @@ function loadState() {
     return createInitialState();
   }
 
+  var parsed;
   try {
-    var parsed = JSON.parse(raw);
-    if (!parsed || parsed.version !== SCHEMA_VERSION) {
-      isNewPlayer = true;
-      return createInitialState();
-    }
-    return parsed;
+    parsed = JSON.parse(raw);
   } catch (error) {
-    // Битые данные лучше заменить, чем уронить приложение.
-    console.warn('Сохранение повреждено, начинаем заново:', error);
-    isNewPlayer = true;
-    return createInitialState();
+    return startFresh(raw, 'Сохранение не разбирается: ' + error);
   }
+
+  /* Неравенство, а не «меньше»: сохранение из будущей версии читать тоже
+     нечем. Перевод с версии на версию пишется тогда, когда схема
+     действительно меняется; до тех пор честнее сберечь копию. */
+  if (!parsed || parsed.version !== SCHEMA_VERSION) {
+    return startFresh(raw, 'Версия сохранения не совпадает с ожидаемой.');
+  }
+
+  if (!looksLikeState(parsed)) {
+    return startFresh(raw, 'Сохранение неполное или испорчено.');
+  }
+
+  return normalizeState(parsed);
 }
 
 function saveState() {
@@ -629,16 +737,25 @@ function createHabitCard(habit) {
   var actions = document.createElement('div');
   actions.className = 'habit__actions';
 
-  if (habit.streak > 0) {
+  /* Именно живая серия: habit.streak после пропуска дня остаётся
+     прежним числом, и огонёк врал бы про серию, которой уже нет —
+     тем более рядом с опытом, посчитанным без множителя (FR-7.3). */
+  var streakDays = activeStreak(habit);
+
+  if (streakDays > 0) {
     var streak = document.createElement('p');
     streak.className = 'pill pill--fire';
 
+    /* Цифра рисуется отдельно от подписи, поэтому вслух выходило
+       «1 дней подряд». Скринридеру отдаём склонённую строку целиком,
+       а видимую цифру от него прячем. */
     var count = document.createElement('span');
-    count.textContent = habit.streak;
+    count.textContent = streakDays;
+    count.setAttribute('aria-hidden', 'true');
 
     var hint = document.createElement('span');
     hint.className = 'visually-hidden';
-    hint.textContent = 'дней подряд';
+    hint.textContent = pluralDays(streakDays) + ' подряд';
 
     streak.append(createFlameIcon(), count, hint);
     actions.append(streak);
@@ -724,6 +841,13 @@ function showLevelUp(levelsGained) {
 
   nodes.levelup.hidden = false;
   nodes['levelup-close'].focus();
+}
+
+/** Показывает отложенное предупреждение, когда экран освободился. */
+function flushNotice() {
+  if (!pendingNotice) return;
+  showMessage(pendingNotice);
+  pendingNotice = null;
 }
 
 function hideLevelUp() {
@@ -845,7 +969,7 @@ function askDelete(id) {
     'Привычка «' +
       habit.title +
       '» исчезнет из списка' +
-      (habit.streak > 0 ? ', серия в ' + habit.streak + ' дн. будет потеряна' : '') +
+      (activeStreak(habit) > 0 ? ', серия в ' + activeStreak(habit) + ' дн. будет потеряна' : '') +
       '. Опыт и уровень персонажа останутся при вас.',
     'Удалить',
     function () {
@@ -1002,6 +1126,9 @@ function finishOnboarding(indexes) {
       ? 'Готово, ' + state.character.name + '. Отмечайте выполненное — персонаж будет расти.'
       : 'Готово. Добавьте первую привычку, когда будете готовы.'
   );
+
+  // Предупреждение о потерянном сохранении важнее приветствия.
+  flushNotice();
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -1011,6 +1138,7 @@ document.addEventListener('DOMContentLoaded', function () {
   render();
 
   if (isNewPlayer) openOnboarding();
+  else flushNotice();
 
   nodes['levelup-close'].addEventListener('click', hideLevelUp);
   nodes.levelup.addEventListener('click', function (event) {
