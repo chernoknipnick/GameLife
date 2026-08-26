@@ -141,6 +141,19 @@
           <ol class="week__days" id="week-days"></ol>
         </section>
 
+        <div class="datarow">
+          <button class="btn btn--data" type="button" id="export-open">Выгрузить в файл</button>
+          <button class="btn btn--data" type="button" id="import-open">Загрузить из файла</button>
+        </div>
+
+        <input
+          class="visually-hidden"
+          id="import-file"
+          type="file"
+          accept="application/json,.json"
+          aria-label="Файл с прогрессом"
+        />
+
         <button class="btn btn--reset" type="button" id="reset-open" hidden>
           Сбросить прогресс
         </button>

@@ -968,6 +968,30 @@ body {
 
 /* Сброс прогресса не должен соперничать за внимание с ежедневными
    действиями, поэтому он текстовый и приглушённый. */
+/* --- Экспорт и импорт (FR-15.2, FR-15.3) --- */
+
+.datarow {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.btn--data {
+  flex: 1;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.btn--data:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
 .btn--reset {
   height: 44px;
   margin-top: 20px;

@@ -785,6 +785,9 @@ var NODE_IDS = [
   'streak-pill',
   'sidebar-streak',
   'add-open',
+  'export-open',
+  'import-open',
+  'import-file',
   'reset-open',
   'levelup',
   'levelup-badge',
@@ -1302,6 +1305,84 @@ function askReset() {
   );
 }
 
+/* --- Экспорт и импорт (FR-15.2, FR-15.3) --- */
+
+/**
+ * Выгружает сохранение в файл (FR-15.2).
+ *
+ * Имя с датой: файлов со временем накапливается несколько, и без даты
+ * они неразличимы. Отступы в JSON оставлены — файл должен читаться
+ * глазами, это единственная резервная копия до появления облака.
+ */
+function exportData() {
+  var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = 'gamelife-' + today() + '.json';
+
+  document.body.append(link);
+  link.click();
+  link.remove();
+
+  // Пока ссылку не отпустишь, браузер держит файл в памяти.
+  URL.revokeObjectURL(url);
+
+  showMessage('Файл с прогрессом сохранён');
+}
+
+/**
+ * Загружает сохранение из файла (FR-15.3).
+ *
+ * Проверки те же, что при чтении хранилища: разбор, версия, форма. Файл
+ * приходит извне, и доверять ему нельзя тем более. Замена необратима,
+ * поэтому спрашивается подтверждение (NFR-4.4), и только после всех
+ * проверок — незачем пугать вопросом, если файл всё равно не подойдёт.
+ */
+function importData(file) {
+  var reader = new FileReader();
+
+  reader.onerror = function () {
+    showMessage('Файл не удалось прочитать');
+  };
+
+  reader.onload = function () {
+    var parsed;
+
+    try {
+      parsed = JSON.parse(reader.result);
+    } catch (error) {
+      showMessage('Это не файл GameLife: содержимое не разбирается');
+      return;
+    }
+
+    if (!parsed || parsed.version !== SCHEMA_VERSION) {
+      showMessage('Файл сделан другой версией приложения');
+      return;
+    }
+
+    if (!looksLikeState(parsed)) {
+      showMessage('Файл повреждён или это не сохранение GameLife');
+      return;
+    }
+
+    askConfirm(
+      'Заменить прогресс из файла?',
+      'Персонаж, привычки и история будут заменены содержимым файла. Отменить это будет нельзя — если нынешний прогресс дорог, сначала выгрузите его в файл.',
+      'Заменить',
+      function () {
+        state = normalizeState(parsed);
+        saveState();
+        render();
+        showMessage('Прогресс загружен из файла');
+      }
+    );
+  };
+
+  reader.readAsText(file);
+}
+
 /* --- Онбординг (FR-1.1 — FR-1.4) --- */
 
 var onboarding = { step: 0, name: '', picked: [] };
@@ -1475,6 +1556,17 @@ document.addEventListener('DOMContentLoaded', function () {
   nodes['confirm-cancel'].addEventListener('click', closeConfirm);
   nodes['confirm-delete'].addEventListener('click', runPendingAction);
   nodes['reset-open'].addEventListener('click', askReset);
+
+  nodes['export-open'].addEventListener('click', exportData);
+  nodes['import-open'].addEventListener('click', function () {
+    nodes['import-file'].click();
+  });
+  nodes['import-file'].addEventListener('change', function (event) {
+    var file = event.target.files[0];
+    if (file) importData(file);
+    // Сброс значения: иначе повторный выбор того же файла не считается изменением.
+    event.target.value = '';
+  });
 
   nodes['onb-begin'].addEventListener('click', function () {
     goToStep(1);
