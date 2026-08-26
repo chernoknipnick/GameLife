@@ -615,6 +615,77 @@ body {
   flex: none;
 }
 
+/* --- Неделя (FR-10.1, FR-10.2) --- */
+
+.week {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.week__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.week__title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.week__meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.week__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.week__day {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+/* Столбец растёт снизу, поэтому заливка прижата к нижнему краю. */
+.week__track {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--surface-dim);
+  overflow: hidden;
+}
+
+.week__fill {
+  width: 100%;
+  border-radius: 8px;
+  background: var(--green);
+}
+
+.week__label {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Сегодняшний столбец подписан заметнее — по нему ищут глазами. */
+.week__day--today .week__label {
+  color: var(--ink);
+  font-weight: 700;
+}
+
 /* --- Пустое состояние (NFR-4.5) --- */
 
 .empty {

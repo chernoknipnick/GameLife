@@ -375,6 +375,87 @@ function pluralDays(count) {
   return count + ' дней';
 }
 
+var WEEK_DAYS = 7;
+
+var WEEKDAY_SHORT = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
+var WEEKDAY_FULL = [
+  'воскресенье',
+  'понедельник',
+  'вторник',
+  'среда',
+  'четверг',
+  'пятница',
+  'суббота',
+];
+
+function weekdayIndex(key) {
+  var parts = key.split('-');
+  return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).getDay();
+}
+
+/** Ключи последних семи суток, от старых к новым. */
+function lastWeekDays() {
+  var days = [];
+  var cursor = today();
+
+  for (var i = 0; i < WEEK_DAYS; i += 1) {
+    days.unshift(cursor);
+    cursor = dayBefore(cursor);
+  }
+
+  return days;
+}
+
+/**
+ * Сводка за неделю: выполнения по дням (FR-10.1) и доля выполненного (FR-10.2).
+ *
+ * Считается только по привычкам, которые есть в списке сейчас. Записи
+ * удалённых остаются в истории, но показывать выполнение того, чего в
+ * списке нет, значило бы врать о текущем наборе.
+ *
+ * День до создания привычки в знаменатель не идёт: пропустить нельзя то,
+ * чего ещё не было. Иначе новая привычка сразу портила бы всю неделю.
+ */
+function weekSummary() {
+  var days = lastWeekDays();
+  var habits = activeHabits();
+
+  var alive = {};
+  habits.forEach(function (habit) {
+    alive[habit.id] = true;
+  });
+
+  var done = {};
+  state.history.forEach(function (entry) {
+    if (!alive[entry.habitId]) return;
+    if (days.indexOf(entry.date) < 0) return;
+    done[entry.date] = (done[entry.date] || 0) + 1;
+  });
+
+  var totalDone = 0;
+  var totalPossible = 0;
+
+  var list = days.map(function (date) {
+    var possible = habits.filter(function (habit) {
+      return !habit.createdAt || habit.createdAt <= date;
+    }).length;
+    var count = done[date] || 0;
+
+    totalDone += count;
+    totalPossible += possible;
+
+    return { date: date, done: count, possible: possible };
+  });
+
+  return {
+    days: list,
+    done: totalDone,
+    possible: totalPossible,
+    percent: totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0,
+  };
+}
+
 /** Опыт за сегодня считаем из истории — счётчик пережил бы смену суток (раздел 7.3). */
 function xpToday() {
   var day = today();
@@ -692,6 +773,9 @@ var NODE_IDS = [
   'xp-track',
   'xp-fill',
   'today-meta',
+  'week',
+  'week-meta',
+  'week-days',
   'habits',
   'abilities',
   'empty',
@@ -979,10 +1063,58 @@ function renderHabits() {
   });
 }
 
+function createWeekDay(day, current) {
+  var item = document.createElement('li');
+  item.className = 'week__day' + (day.date === current ? ' week__day--today' : '');
+
+  var track = document.createElement('span');
+  track.className = 'week__track';
+
+  var fill = document.createElement('span');
+  fill.className = 'week__fill';
+  var share = day.possible > 0 ? day.done / day.possible : 0;
+  fill.style.height = Math.round(share * 100) + '%';
+  track.append(fill);
+
+  /* Буквы дней понятны глазом, но не на слух: столбец без подписи вслух
+     превращается в набор из двух букв без числа. */
+  var label = document.createElement('span');
+  label.className = 'week__label';
+  label.textContent = WEEKDAY_SHORT[weekdayIndex(day.date)];
+  label.setAttribute('aria-hidden', 'true');
+
+  var hint = document.createElement('span');
+  hint.className = 'visually-hidden';
+  hint.textContent =
+    WEEKDAY_FULL[weekdayIndex(day.date)] + ': выполнено ' + day.done + ' из ' + day.possible;
+
+  item.append(track, label, hint);
+  return item;
+}
+
+function renderWeek() {
+  // Пустая неделя у нового игрока — семь серых столбиков без смысла.
+  var show = state.habits.length > 0 || state.history.length > 0;
+  nodes.week.hidden = !show;
+  if (!show) return;
+
+  var summary = weekSummary();
+  var current = today();
+
+  nodes['week-meta'].textContent =
+    'Выполнено ' + summary.done + ' из ' + summary.possible + ' · ' + summary.percent + '%';
+
+  nodes['week-days'].replaceChildren();
+  summary.days.forEach(function (day) {
+    nodes['week-days'].append(createWeekDay(day, current));
+  });
+}
+
 function render() {
   renderCharacter();
   renderAbilities();
   renderHabits();
+  renderWeek();
 }
 
 /** Короткое сообщение об итоге действия (принцип 1.2 — мгновенная обратная связь). */
