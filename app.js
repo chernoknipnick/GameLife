@@ -583,6 +583,39 @@ function addHabit(title, stat, difficulty) {
 }
 
 /**
+ * Меняет название, характеристику и сложность привычки (FR-4.8).
+ * Возвращает false, если правка не состоялась.
+ *
+ * История не переписывается: начисленный опыт остаётся там, куда попал, и
+ * в том размере, в каком был начислен. Новая сложность и новая
+ * характеристика действуют со следующего выполнения — иначе правка задним
+ * числом меняла бы уже закрытые сутки, а отмена выполнения (FR-4.9)
+ * снимала бы не то, что начисляла.
+ *
+ * Серия и рекорд не трогаются: смена названия — не пропуск дня.
+ */
+function updateHabit(id, title, stat, difficulty) {
+  var habit = findHabit(id);
+  if (!habit) return false;
+
+  var clean = title.trim().slice(0, MAX_TITLE_LENGTH);
+
+  if (!clean) {
+    showMessage('Введите название привычки');
+    return false;
+  }
+
+  habit.title = clean;
+  habit.stat = stat;
+  habit.difficulty = difficulty;
+
+  saveState();
+  render();
+  showMessage('Привычка «' + clean + '» изменена');
+  return true;
+}
+
+/**
  * Удаляет привычку. Записи в истории остаются: они уже принесли опыт,
  * и стирать их значило бы задним числом отнять заработанное.
  */
@@ -680,6 +713,7 @@ var NODE_IDS = [
   'confirm-cancel',
   'confirm-delete',
   'sheet',
+  'sheet-title',
   'sheet-cancel',
   'sheet-save',
   'habit-title',
@@ -795,10 +829,14 @@ function createFlameIcon() {
   return svg;
 }
 
+var PENCIL_PATH =
+  'M13.4 3.1a1.5 1.5 0 0 1 2.1 0l1.4 1.4a1.5 1.5 0 0 1 0 2.1L7.5 16.1 3.5 17l.9-4L13.4 3.1z';
+
 var TRASH_PATH =
   'M3 5.5h14M8 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M5 5.5l.8 11a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9l.8-11';
 
-function createTrashIcon() {
+/** Обе иконки действий рисуются одинаково и отличаются только контуром. */
+function createActionIcon(shape) {
   var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'icon-action');
   svg.setAttribute('viewBox', '0 0 20 20');
@@ -806,7 +844,7 @@ function createTrashIcon() {
   svg.setAttribute('aria-hidden', 'true');
 
   var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', TRASH_PATH);
+  path.setAttribute('d', shape);
   path.setAttribute('stroke', 'currentColor');
   path.setAttribute('stroke-width', '1.5');
   path.setAttribute('stroke-linecap', 'round');
@@ -879,16 +917,25 @@ function createHabitCard(habit) {
     actions.append(streak);
   }
 
+  var edit = document.createElement('button');
+  edit.type = 'button';
+  edit.className = 'habit__action habit__action--edit';
+  edit.setAttribute('aria-label', 'Изменить привычку «' + habit.title + '»');
+  edit.append(createActionIcon(PENCIL_PATH));
+  edit.addEventListener('click', function () {
+    openSheet(habit);
+  });
+
   var remove = document.createElement('button');
   remove.type = 'button';
-  remove.className = 'habit__delete';
+  remove.className = 'habit__action habit__action--delete';
   remove.setAttribute('aria-label', 'Удалить привычку «' + habit.title + '»');
-  remove.append(createTrashIcon());
+  remove.append(createActionIcon(TRASH_PATH));
   remove.addEventListener('click', function () {
     askDelete(habit.id);
   });
 
-  actions.append(remove);
+  actions.append(edit, remove);
   row.append(actions);
 
   /* FR-4.6 соблюдено по-прежнему: выполнить дважды за сутки нельзя,
@@ -980,7 +1027,8 @@ function hideLevelUp() {
 
 /* --- Лист создания привычки --- */
 
-var draft = { stat: 'strength', difficulty: 'medium' };
+/* draft.id держит привычку, которую правим; null — создаём новую (FR-4.8). */
+var draft = { id: null, stat: 'strength', difficulty: 'medium' };
 
 function createChoice(id, group, selected, label, extra) {
   var button = document.createElement('button');
@@ -1030,16 +1078,26 @@ function renderSheet() {
     );
   });
 
-  /* У новой привычки серии нет, поэтому множитель равен единице —
-     показываем базовый опыт сложности без обещаний. */
-  var xp = DIFFICULTY[draft.difficulty].xp;
+  /* У новой привычки серии нет, поэтому множитель равен единице. При
+     правке считаем по живой серии — иначе лист обещал бы одно число, а
+     карточка в списке показывала другое. */
+  var edited = draft.id ? findHabit(draft.id) : null;
+  var base = DIFFICULTY[draft.difficulty].xp;
+  var xp = edited ? Math.round(base * streakMultiplier(activeStreak(edited))) : base;
   nodes['preview-xp'].textContent = '+' + xp;
   nodes['preview-discipline'].textContent = '+' + disciplineFor(xp);
 }
 
-function openSheet() {
-  draft = { stat: 'strength', difficulty: 'medium' };
-  nodes['habit-title'].value = '';
+/** Открывает лист: с привычкой — на правку, без неё — на создание. */
+function openSheet(habit) {
+  draft = habit
+    ? { id: habit.id, stat: habit.stat, difficulty: habit.difficulty }
+    : { id: null, stat: 'strength', difficulty: 'medium' };
+
+  nodes['habit-title'].value = habit ? habit.title : '';
+  nodes['sheet-title'].textContent = habit ? 'Изменить привычку' : 'Новая привычка';
+  nodes['sheet-save'].textContent = habit ? 'Сохранить' : 'Создать';
+
   renderSheet();
   nodes.sheet.hidden = false;
   nodes['habit-title'].focus();
@@ -1051,11 +1109,12 @@ function closeSheet() {
 }
 
 function saveDraft() {
-  if (addHabit(nodes['habit-title'].value, draft.stat, draft.difficulty)) {
-    closeSheet();
-  } else {
-    nodes['habit-title'].focus();
-  }
+  var saved = draft.id
+    ? updateHabit(draft.id, nodes['habit-title'].value, draft.stat, draft.difficulty)
+    : addHabit(nodes['habit-title'].value, draft.stat, draft.difficulty);
+
+  if (saved) closeSheet();
+  else nodes['habit-title'].focus();
 }
 
 /* --- Подтверждение необратимых действий (FR-4.3, FR-15.1, NFR-4.4) --- */
@@ -1269,7 +1328,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (event.target === nodes.levelup) hideLevelUp();
   });
 
-  nodes['add-open'].addEventListener('click', openSheet);
+  nodes['add-open'].addEventListener('click', function () {
+    openSheet(null);
+  });
   nodes['sheet-cancel'].addEventListener('click', closeSheet);
   nodes['sheet-save'].addEventListener('click', saveDraft);
   nodes.sheet.addEventListener('click', function (event) {

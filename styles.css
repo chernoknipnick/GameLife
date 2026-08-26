@@ -581,7 +581,7 @@ body {
   flex: none;
 }
 
-.habit__delete {
+.habit__action {
   display: grid;
   place-items: center;
   width: 44px;
@@ -594,12 +594,17 @@ body {
   cursor: pointer;
 }
 
-.habit__delete:hover {
+.habit__action:hover {
   background: var(--surface-dim);
+  color: var(--ink);
+}
+
+/* Удаление необратимо — только оно подсвечивается опасным цветом. */
+.habit__action--delete:hover {
   color: var(--danger);
 }
 
-.habit__delete:focus-visible {
+.habit__action:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: -2px;
 }
