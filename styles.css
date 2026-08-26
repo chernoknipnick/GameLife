@@ -438,14 +438,21 @@ body {
   border-color: var(--green-dark);
 }
 
-.btn--completed {
+/* Выполненную привычку можно откатить в течение суток (FR-4.9), поэтому
+   кнопка не гаснет насовсем, а меняет назначение: приглушена, но живая. */
+.btn--undo {
   height: 46px;
   margin-top: 12px;
   border-color: var(--line);
   border-radius: 12px;
   background: var(--bg);
-  color: var(--muted-light);
-  cursor: default;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.btn--undo:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
 }
 
 .btn--add {
