@@ -11,6 +11,8 @@
    состояние), FR-15.1 (сброс прогресса),
    раздел 7 (баланс).
 
+   Из v0.2: FR-4.9 — отмена выполнения в течение текущих суток.
+
    Формат хранения повторяет раздел 6.1 ТЗ, включая поля, которые пока
    не используются (bestStreak, schedule, archived, settings.theme) —
    чтобы задачи 6–8 и переход на React в v0.3 не ломали сохранённые
@@ -119,12 +121,21 @@ function today() {
   return dayKey(new Date(), state.settings.dayResetHour);
 }
 
-/** Ключ предыдущих суток — нужен, чтобы отличить продолжение серии от пропуска. */
-function dayBefore(key) {
+function shiftDay(key, delta) {
   var parts = key.split('-');
   var date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-  date.setDate(date.getDate() - 1);
+  date.setDate(date.getDate() + delta);
   return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+}
+
+/** Ключ предыдущих суток — нужен, чтобы отличить продолжение серии от пропуска. */
+function dayBefore(key) {
+  return shiftDay(key, -1);
+}
+
+/** Ключ следующих суток — нужен при пересчёте рекордной серии по истории. */
+function nextDay(key) {
+  return shiftDay(key, 1);
 }
 
 /* --- Состояние и хранилище --- */
@@ -443,6 +454,110 @@ function completeHabit(id) {
 }
 
 /**
+ * Точная обратная операция к applyLevelUps: отменённое выполнение могло
+ * поднять уровень, и тогда его надо снять вместе с опытом (FR-4.9).
+ */
+function applyLevelDowns() {
+  var character = state.character;
+
+  while (character.xp < 0 && character.level > 1) {
+    character.level -= 1;
+    character.xp += xpToNextLevel(character.level);
+  }
+
+  // На первом уровне отрицательного остатка быть не может.
+  if (character.xp < 0) character.xp = 0;
+}
+
+/**
+ * Пересчитывает серию и рекорд привычки по истории.
+ *
+ * Вычесть единицу из habit.streak нельзя: после пропуска дня серия была
+ * сброшена до единицы, и прежнюю дату выполнения знает только история.
+ * По ней же восстанавливается рекорд — отменяемый день мог его и поставить.
+ */
+function rebuildStreak(habit) {
+  var days = {};
+  var last = null;
+
+  state.history.forEach(function (entry) {
+    if (entry.habitId !== habit.id) return;
+    days[entry.date] = true;
+    // Ключи вида ГГГГ-ММ-ДД сравниваются как строки без разбора даты.
+    if (last === null || entry.date > last) last = entry.date;
+  });
+
+  habit.lastDone = last;
+
+  var current = 0;
+  var cursor = last;
+  while (cursor && days[cursor]) {
+    current += 1;
+    cursor = dayBefore(cursor);
+  }
+  habit.streak = current;
+
+  var best = 0;
+  Object.keys(days).forEach(function (date) {
+    // Считаем только от начала серии, иначе один и тот же отрезок пройдём многократно.
+    if (days[dayBefore(date)]) return;
+
+    var run = 0;
+    var walk = date;
+    while (days[walk]) {
+      run += 1;
+      walk = nextDay(walk);
+    }
+    if (run > best) best = run;
+  });
+  habit.bestStreak = best;
+}
+
+/**
+ * Отменяет сегодняшнее выполнение (FR-4.9).
+ *
+ * Закрывает разрыв между NFR-4.4 и принципом 1.1: обратимость нужна, но
+ * подтверждение на ежедневное действие сломало бы отметку в два действия.
+ * Отменить можно только текущие сутки — вчерашний день уже закрыт.
+ *
+ * Возвращает false, если отменять нечего.
+ */
+function undoHabit(id) {
+  var habit = findHabit(id);
+  if (!habit || !isDoneToday(habit)) return false;
+
+  var day = today();
+
+  /* Запись за сутки одна (FR-4.6), но ищем с конца: свежая запись там. */
+  var at = -1;
+  for (var i = state.history.length - 1; i >= 0; i -= 1) {
+    if (state.history[i].date === day && state.history[i].habitId === id) {
+      at = i;
+      break;
+    }
+  }
+
+  /* Опыт снимаем ровно тот, что был начислен: множитель за серию с тех пор
+     мог измениться, и пересчёт по текущей формуле вернул бы другое число. */
+  if (at < 0) return false;
+  var gain = state.history[at].xp;
+  state.history.splice(at, 1);
+
+  state.character.xp -= gain;
+  state.character.totalXp -= gain;
+  state.character.stats[habit.stat] -= gain;
+  state.character.stats.discipline -= disciplineFor(gain);
+
+  applyLevelDowns();
+  rebuildStreak(habit);
+
+  saveState();
+  render();
+  showMessage('Выполнение «' + habit.title + '» отменено, ' + gain + ' опыта снято');
+  return true;
+}
+
+/**
  * Создаёт привычку из черновика формы.
  * Возвращает false, если создание не состоялось.
  */
@@ -726,9 +841,12 @@ function createHabitCard(habit) {
   chip.className = 'chip chip--' + habit.stat;
   chip.textContent = stat.label;
 
+  /* У выполненной привычки обещание опыта бессмысленно — он уже начислен,
+     поэтому на его месте стоит отметка о выполнении. Слово «Готово» ушло
+     сюда с кнопки: кнопка теперь отменяет. */
   var meta = document.createElement('span');
   meta.className = 'habit__gain';
-  meta.textContent = '+' + gain + ' · +' + disciplineFor(gain) + ' ДИС';
+  meta.textContent = done ? 'Готово' : '+' + gain + ' · +' + disciplineFor(gain) + ' ДИС';
 
   tags.append(chip, meta);
   info.append(title, tags);
@@ -773,17 +891,23 @@ function createHabitCard(habit) {
   actions.append(remove);
   row.append(actions);
 
+  /* FR-4.6 соблюдено по-прежнему: выполнить дважды за сутки нельзя,
+     кнопка выполненной привычки не повторяет действие, а отменяет его. */
   var button = document.createElement('button');
   button.type = 'button';
-  button.className = done ? 'btn btn--completed' : 'btn btn--done';
-  button.textContent = done ? 'Готово' : 'Выполнено';
-  button.disabled = done; // FR-4.6
+  button.className = done ? 'btn btn--undo' : 'btn btn--done';
+  button.textContent = done ? 'Отменить' : 'Выполнено';
+  button.setAttribute(
+    'aria-label',
+    (done ? 'Отменить выполнение привычки «' : 'Отметить выполненной привычку «') +
+      habit.title +
+      '»'
+  );
 
-  if (!done) {
-    button.addEventListener('click', function () {
-      completeHabit(habit.id);
-    });
-  }
+  button.addEventListener('click', function () {
+    if (done) undoHabit(habit.id);
+    else completeHabit(habit.id);
+  });
 
   card.append(row, button);
   return card;
