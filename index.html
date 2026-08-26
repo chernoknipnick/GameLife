@@ -133,6 +133,27 @@
 
         <button class="btn btn--add" type="button" id="add-open">Добавить привычку</button>
 
+        <section class="week" id="week" aria-labelledby="week-title" hidden>
+          <div class="week__head">
+            <h2 class="week__title" id="week-title">Неделя</h2>
+            <p class="week__meta" id="week-meta"></p>
+          </div>
+          <ol class="week__days" id="week-days"></ol>
+        </section>
+
+        <div class="datarow">
+          <button class="btn btn--data" type="button" id="export-open">Выгрузить в файл</button>
+          <button class="btn btn--data" type="button" id="import-open">Загрузить из файла</button>
+        </div>
+
+        <input
+          class="visually-hidden"
+          id="import-file"
+          type="file"
+          accept="application/json,.json"
+          aria-label="Файл с прогрессом"
+        />
+
         <button class="btn btn--reset" type="button" id="reset-open" hidden>
           Сбросить прогресс
         </button>
