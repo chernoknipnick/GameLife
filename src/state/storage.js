@@ -116,13 +116,13 @@ export function loadState() {
     // Приватный режим или запрет хранилища: играем без сохранения.
     console.warn('Хранилище недоступно, прогресс не сохранится:', error);
     // Знакомство всё равно нужно: без него человек видит пустой экран без объяснений.
-    return { state: createInitialState(), isNewPlayer: true, notice: null };
+    return { game: createInitialState(), isNewPlayer: true, notice: null };
   }
 
-  if (!raw) return { state: createInitialState(), isNewPlayer: true, notice: null };
+  if (!raw) return { game: createInitialState(), isNewPlayer: true, notice: null };
 
   const result = parseState(raw);
-  if (result.state) return { state: result.state, isNewPlayer: false, notice: null };
+  if (result.state) return { game: result.state, isNewPlayer: false, notice: null };
 
   /* Начинаем с нуля, но не молча: непригодное сохранение уезжает в
      запасной ключ. Без этого смена SCHEMA_VERSION стёрла бы прогресс
@@ -137,7 +137,7 @@ export function loadState() {
     console.warn('Не удалось сохранить копию:', error);
   }
 
-  return { state: createInitialState(), isNewPlayer: true, notice };
+  return { game: createInitialState(), isNewPlayer: true, notice };
 }
 
 export function saveState(state) {

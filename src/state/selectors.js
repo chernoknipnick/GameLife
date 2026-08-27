@@ -29,9 +29,7 @@ export function activeStreak(state, habit) {
 
 /** Опыт, который принесёт следующее выполнение, с учётом живой серии. */
 export function xpFor(state, habit) {
-  return Math.round(
-    DIFFICULTY[habit.difficulty].xp * streakMultiplier(activeStreak(state, habit))
-  );
+  return Math.round(DIFFICULTY[habit.difficulty].xp * streakMultiplier(activeStreak(state, habit)));
 }
 
 /**
@@ -110,9 +108,7 @@ export function weekSummary(state) {
   let totalPossible = 0;
 
   const list = days.map((date) => {
-    const possible = habits.filter(
-      (habit) => !habit.createdAt || habit.createdAt <= date
-    ).length;
+    const possible = habits.filter((habit) => !habit.createdAt || habit.createdAt <= date).length;
     const count = done[date] || 0;
 
     totalDone += count;

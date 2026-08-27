@@ -14,9 +14,7 @@ function pad(value) {
 export function dayKey(date, resetHour) {
   const shifted = new Date(date.getTime());
   shifted.setHours(shifted.getHours() - resetHour);
-  return (
-    shifted.getFullYear() + '-' + pad(shifted.getMonth() + 1) + '-' + pad(shifted.getDate())
-  );
+  return shifted.getFullYear() + '-' + pad(shifted.getMonth() + 1) + '-' + pad(shifted.getDate());
 }
 
 /** Сегодняшний ключ для указанного часа смены суток. */

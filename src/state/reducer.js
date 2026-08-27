@@ -23,13 +23,7 @@ import {
 } from './rules.js';
 import { dayBefore, nextDay } from './day.js';
 import { createInitialState, makeHabit } from './schema.js';
-import {
-  activeHabits,
-  findHabit,
-  isDoneToday,
-  today,
-  xpToday,
-} from './selectors.js';
+import { activeHabits, findHabit, isDoneToday, today, xpToday } from './selectors.js';
 
 let toastSeq = 0;
 
@@ -162,7 +156,13 @@ function complete(prev, id) {
 
   return withToast(
     { ...prev, game },
-    '+' + gain + ' в характеристику «' + STATS[habit.stat].label + '», +' + discipline + ' к дисциплине'
+    '+' +
+      gain +
+      ' в характеристику «' +
+      STATS[habit.stat].label +
+      '», +' +
+      discipline +
+      ' к дисциплине'
   );
 }
 
@@ -318,6 +318,13 @@ export function reducer(prev, action) {
       return { ...prev, levelUp: null };
     case 'notice':
       return withToast(prev, action.text);
+
+    /* Отложенное предупреждение о непригодном сохранении: показывается,
+       когда экран освободился от знакомства. */
+    case 'flushNotice':
+      return prev.pendingNotice
+        ? withToast({ ...prev, pendingNotice: null }, prev.pendingNotice)
+        : prev;
     case 'clearToast':
       return prev.toast && prev.toast.seq === action.seq ? { ...prev, toast: null } : prev;
     default:

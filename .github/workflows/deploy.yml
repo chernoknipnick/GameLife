@@ -1,0 +1,70 @@
+# Публикация на GitHub Pages.
+#
+# До v0.3 Pages отдавал ветку main напрямую: в корне лежали готовые
+# index.html, styles.css и app.js. С переездом на Vite отдавать стало
+# нечего — нужна сборка, а класть dist в репозиторий значит пухнуть
+# историей и ловить конфликты в собранных файлах на каждом слиянии.
+#
+# Поэтому источник Pages переключён с ветки на этот рабочий процесс.
+
+name: Публикация
+
+on:
+  push:
+    branches: [main]
+  # Ручной запуск нужен, когда деплой упал не по вине кода.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Параллельные публикации не нужны: важна последняя. Но начатую не
+# отменяем — недоделанный деплой хуже лишней минуты ожидания.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Сборка
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Забрать код
+        uses: actions/checkout@v4
+
+      - name: Поставить Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Собрать
+        run: npm run build
+
+      - name: Настроить Pages
+        uses: actions/configure-pages@v5
+
+      - name: Загрузить сборку
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Выкладка
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Выложить
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -199,7 +199,12 @@ describe('отмена выполнения', () => {
 describe('привычки', () => {
   it('не создаёт привычку без названия', () => {
     const было = старт();
-    const стало = reducer(было, { type: 'add', title: '   ', stat: 'strength', difficulty: 'easy' });
+    const стало = reducer(было, {
+      type: 'add',
+      title: '   ',
+      stat: 'strength',
+      difficulty: 'easy',
+    });
 
     expect(стало.game.habits).toHaveLength(0);
     expect(стало.toast.text).toBe('Введите название привычки');
@@ -268,7 +273,10 @@ describe('сброс и загрузка', () => {
 
   it('загрузка из файла заменяет состояние целиком', () => {
     const было = старт({ habits: [привычка()] });
-    const файл = { ...createInitialState(), character: { ...createInitialState().character, name: 'Из файла' } };
+    const файл = {
+      ...createInitialState(),
+      character: { ...createInitialState().character, name: 'Из файла' },
+    };
 
     const стало = reducer(было, { type: 'replace', game: файл });
 
