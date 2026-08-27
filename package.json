@@ -1,0 +1,24 @@
+{
+  "name": "gamelife",
+  "version": "0.3.0",
+  "description": "Life RPG — геймифицированный трекер привычек",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.0",
+    "prettier": "^3.3.3",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  }
+}
