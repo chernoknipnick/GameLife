@@ -615,6 +615,29 @@ body {
   flex: none;
 }
 
+/* --- Числа в шапке персонажа и на характеристиках --- */
+
+/* На узких экранах их нет: там полоски хватает, а место дороже.
+   Показываются вместе с десктопной раскладкой, от 1024 пикселей. */
+.herofacts,
+.ability__hint {
+  display: none;
+}
+
+.herofact__label {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.herofact__value {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+}
+
 /* --- Неделя (FR-10.1, FR-10.2) --- */
 
 .week {
@@ -1294,6 +1317,24 @@ body {
 @media (min-width: 1024px) {
   body {
     background: var(--bg);
+  }
+
+  .herofacts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 18px 0 0;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+
+  .ability__hint {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
   }
 
   .app {
