@@ -6,6 +6,7 @@
 import { ALL_STATS, BACKUP_KEY, DIFFICULTY, SCHEMA_VERSION, STATS, STORAGE_KEY } from './rules.js';
 import { DEFAULT_RESET_HOUR } from './day.js';
 import { createInitialState } from './schema.js';
+import { rebuildStreak } from './streaks.js';
 
 function isFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value);
@@ -64,16 +65,23 @@ export function normalizeState(loaded) {
       DIFFICULTY[habit.difficulty] !== undefined
   );
 
-  loaded.habits.forEach((habit) => {
-    if (!isFiniteNumber(habit.streak)) habit.streak = 0;
-    if (!isFiniteNumber(habit.bestStreak)) habit.bestStreak = habit.streak;
-    if (typeof habit.lastDone !== 'string') habit.lastDone = null;
-    habit.archived = habit.archived === true;
-  });
-
   loaded.history = loaded.history.filter(
     (entry) => entry && typeof entry.date === 'string' && isFiniteNumber(entry.xp)
   );
+
+  /* Серия, последнее выполнение и рекорд пересчитываются из истории при
+     каждом чтении — и из хранилища, и из файла.
+
+     Эти поля лишь кэшируют расчёт по истории, а разойтись с ней они
+     могут: файл правят руками. Сохранение, где история знает про
+     сегодняшнее выполнение, а lastDone пуст, позволяло выполнить
+     привычку второй раз за сутки, и недельная сводка показывала больше
+     ста процентов. Пересчёт закрывает это на обоих путях сразу, вместо
+     заплатки на одном импорте. */
+  loaded.habits.forEach((habit) => {
+    habit.archived = habit.archived === true;
+    rebuildStreak(loaded.history, habit);
+  });
 
   return loaded;
 }
