@@ -59,6 +59,23 @@ describe('запуск приложения', () => {
     expect(state.pendingNotice).toContain('gamelife.backup');
   });
 
+  it('запрет хранилища не ломает запуск и оставляет знакомство', () => {
+    /* Приватный режим и настройка «блокировать данные сайтов»: обращение
+       к localStorage бросает, а не возвращает null. Из браузера такое не
+       подделать после загрузки страницы — только отсюда. */
+    vi.stubGlobal('window', {
+      get localStorage() {
+        throw new DOMException('доступ запрещён', 'SecurityError');
+      },
+    });
+
+    const state = initialReducerState(loadState());
+
+    expect(state.game.character).toBeDefined();
+    expect(state.isNewPlayer).toBe(true);
+    expect(state.pendingNotice).toBeNull();
+  });
+
   it('поднятое состояние сразу принимает действия', () => {
     // Именно этого не хватало: собранное на запуске состояние должно
     // годиться редьюсеру без переименований.
