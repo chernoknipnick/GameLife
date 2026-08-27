@@ -772,6 +772,9 @@ var NODE_IDS = [
   'xp-value',
   'xp-track',
   'xp-fill',
+  'fact-tonext',
+  'fact-total',
+  'fact-today',
   'today-meta',
   'week',
   'week-meta',
@@ -849,6 +852,13 @@ function renderCharacter() {
   nodes['xp-fill'].style.width = percent + '%';
   nodes['xp-track'].setAttribute('aria-valuenow', character.xp);
   nodes['xp-track'].setAttribute('aria-valuemax', need);
+
+  /* Три числа под полоской: на десктопе места много, и одна полоска без
+     цифр оставляет экран пустым. На узких экранах они скрыты стилями —
+     там дорог каждый пиксель. */
+  nodes['fact-tonext'].textContent = need - character.xp;
+  nodes['fact-total'].textContent = character.totalXp;
+  nodes['fact-today'].textContent = xpToday() + ' / ' + DAILY_LIMIT;
 }
 
 function createAbilityCard(key) {
@@ -889,7 +899,13 @@ function createAbilityCard(key) {
     ' опыта, до следующего уровня ' +
     (STAT_LEVEL_STEP - progress);
 
-  card.append(abbr, value, track, hint);
+  /* То же число, что и в подписи для скринридера, но видимое: голый
+     уровень с полоской не отвечает на вопрос «сколько осталось». */
+  var left = document.createElement('span');
+  left.className = 'ability__hint';
+  left.textContent = 'ещё ' + (STAT_LEVEL_STEP - progress);
+
+  card.append(abbr, value, track, left, hint);
   return card;
 }
 
