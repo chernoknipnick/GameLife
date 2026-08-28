@@ -1527,21 +1527,29 @@ body {
   color: var(--muted-light);
 }
 
-.sidebar__streak {
+.sidebar__stats {
+  display: grid;
+  gap: 10px;
   margin-top: auto;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 12px;
 }
 
-.sidebar__streak-label {
+.sidebar__stat-label {
   margin: 0 0 6px;
   font-size: 12px;
   font-weight: 600;
   color: var(--muted);
 }
 
-.sidebar__streak-value {
+.sidebar__stat-note {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.sidebar__stat-value {
   margin: 0;
   font-size: 26px;
   font-weight: 800;
