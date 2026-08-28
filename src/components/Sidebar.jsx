@@ -1,4 +1,4 @@
-import { pluralDays } from '../state/day.js';
+import { humanDate, pluralDays } from '../state/day.js';
 
 /* Будущие разделы показаны с пометкой релиза и помечены aria-disabled:
    они спроектированы в ТЗ, но притворяться работающими ссылками не должны.
@@ -18,7 +18,7 @@ export const SECTIONS = [
   { title: 'Настройки', release: 'v0.4', round: true },
 ];
 
-export default function Sidebar({ streak }) {
+export default function Sidebar({ streak, days, since }) {
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
@@ -48,9 +48,20 @@ export default function Sidebar({ streak }) {
         Разделы с пометкой релиза спроектированы в техническом задании и появятся позже.
       </p>
 
-      <div className="sidebar__streak">
-        <p className="sidebar__streak-label">Дней подряд</p>
-        <p className="sidebar__streak-value">{pluralDays(streak)}</p>
+      {/* Уголок статистики: серия и возраст персонажа (FR-7.7, FR-2.8).
+          Дата создания вынесена в подпись, а не в отдельную строку —
+          число дней отвечает на вопрос сразу, дата нужна изредка. */}
+      <div className="sidebar__stats">
+        <div className="sidebar__stat">
+          <p className="sidebar__stat-label">Дней подряд</p>
+          <p className="sidebar__stat-value">{pluralDays(streak)}</p>
+        </div>
+
+        <div className="sidebar__stat">
+          <p className="sidebar__stat-label">В игре</p>
+          <p className="sidebar__stat-value">{pluralDays(days)}</p>
+          <p className="sidebar__stat-note">с {humanDate(since)}</p>
+        </div>
       </div>
     </aside>
   );

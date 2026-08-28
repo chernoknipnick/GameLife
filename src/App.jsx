@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useState } from 'react';
 import { initialReducerState, reducer } from './state/reducer.js';
 import { loadState, saveState } from './state/storage.js';
 import { exportGame, readGameFile } from './state/data.js';
-import { appStreak, activeStreak } from './state/selectors.js';
+import { appStreak, activeStreak, daysInGame } from './state/selectors.js';
 import Sidebar from './components/Sidebar.jsx';
 import Hero from './components/Hero.jsx';
 import Abilities from './components/Abilities.jsx';
@@ -101,7 +101,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar streak={appStreak(game)} />
+      <Sidebar streak={appStreak(game)} days={daysInGame(game)} since={game.character.createdAt} />
       <Hero game={game} />
       <Abilities stats={game.character.stats} />
 

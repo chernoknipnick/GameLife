@@ -2,7 +2,7 @@
    счётчики пережили бы смену суток и разошлись бы с историей. */
 
 import { DAILY_LIMIT, WEEK_DAYS, streakMultiplier, DIFFICULTY } from './rules.js';
-import { dayBefore, todayKey } from './day.js';
+import { dayBefore, daysBetween, todayKey } from './day.js';
 
 export function today(state) {
   return todayKey(state.settings.dayResetHour);
@@ -123,6 +123,19 @@ export function weekSummary(state) {
     possible: totalPossible,
     percent: totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0,
   };
+}
+
+/**
+ * Который день человек в игре (FR-2.8).
+ *
+ * День создания считается первым, а не нулевым: «первый день» понятнее,
+ * чем «ноль дней», и совпадает с тем, как считают дни люди.
+ */
+export function daysInGame(state) {
+  const начало = state.character.createdAt;
+  if (!начало) return 1;
+
+  return Math.max(1, daysBetween(начало, today(state)) + 1);
 }
 
 /** Есть ли что сбрасывать: на нетронутом состоянии кнопка только мешает. */

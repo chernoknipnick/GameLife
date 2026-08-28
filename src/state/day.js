@@ -50,6 +50,41 @@ export function pluralDays(count) {
   return count + ' дней';
 }
 
+/* Ключи суток сравнивать вычитанием строк нельзя, поэтому считаем через
+   даты. Полдень намеренно: на границе суток переход на летнее время
+   съедал бы или добавлял час, и разница уезжала бы на день. */
+function вПолдень(key) {
+  const parts = key.split('-');
+  return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 12);
+}
+
+/** Сколько суток прошло между двумя ключами. Одинаковые дают ноль. */
+export function daysBetween(from, to) {
+  const мс = вПолдень(to) - вПолдень(from);
+  return Math.round(мс / 86400000);
+}
+
+const MONTHS = [
+  'января',
+  'февраля',
+  'марта',
+  'апреля',
+  'мая',
+  'июня',
+  'июля',
+  'августа',
+  'сентября',
+  'октября',
+  'ноября',
+  'декабря',
+];
+
+/** Ключ суток человеческими словами: «22 августа 2026». */
+export function humanDate(key) {
+  const parts = key.split('-');
+  return Number(parts[2]) + ' ' + MONTHS[Number(parts[1]) - 1] + ' ' + parts[0];
+}
+
 export const WEEKDAY_SHORT = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
 export const WEEKDAY_FULL = [
