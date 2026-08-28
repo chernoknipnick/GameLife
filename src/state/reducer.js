@@ -21,7 +21,8 @@ import {
   streakMultiplier,
   xpToNextLevel,
 } from './rules.js';
-import { dayBefore, nextDay } from './day.js';
+import { dayBefore } from './day.js';
+import { rebuildStreak } from './streaks.js';
 import { createInitialState, makeHabit } from './schema.js';
 import { activeHabits, findHabit, isDoneToday, today, xpToday } from './selectors.js';
 
@@ -62,50 +63,6 @@ function applyLevelDowns(character) {
 
   // На первом уровне отрицательного остатка быть не может.
   if (character.xp < 0) character.xp = 0;
-}
-
-/**
- * Пересчитывает серию и рекорд привычки по истории.
- *
- * Вычесть единицу из habit.streak нельзя: после пропуска дня серия была
- * сброшена до единицы, и прежнюю дату выполнения знает только история.
- * По ней же восстанавливается рекорд — отменяемый день мог его и поставить.
- */
-function rebuildStreak(game, habit) {
-  const days = {};
-  let last = null;
-
-  game.history.forEach((entry) => {
-    if (entry.habitId !== habit.id) return;
-    days[entry.date] = true;
-    // Ключи вида ГГГГ-ММ-ДД сравниваются как строки без разбора даты.
-    if (last === null || entry.date > last) last = entry.date;
-  });
-
-  habit.lastDone = last;
-
-  let current = 0;
-  let cursor = last;
-  while (cursor && days[cursor]) {
-    current += 1;
-    cursor = dayBefore(cursor);
-  }
-  habit.streak = current;
-
-  let best = 0;
-  Object.keys(days).forEach((date) => {
-    // Считаем только от начала серии, иначе один отрезок пройдём многократно.
-    if (days[dayBefore(date)]) return;
-
-    let run = 0;
-    let walk = date;
-    while (days[walk]) {
-      run += 1;
-      walk = nextDay(walk);
-    }
-    if (run > best) best = run;
-  });
-  habit.bestStreak = best;
 }
 
 function complete(prev, id) {
@@ -202,7 +159,7 @@ function undo(prev, id) {
   game.character.stats.discipline -= disciplineFor(gain);
 
   applyLevelDowns(game.character);
-  rebuildStreak(game, habit);
+  rebuildStreak(game.history, habit);
 
   return withToast(
     { ...prev, game },
