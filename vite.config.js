@@ -8,6 +8,8 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'node',
-    include: ['src/**/*.test.js'],
+    /* Модули логики проверяются в node — он быстрее. Тест, поднимающий
+       приложение целиком, объявляет jsdom у себя в шапке файла. */
+    include: ['src/**/*.test.js', 'src/**/*.test.jsx'],
   },
 });
