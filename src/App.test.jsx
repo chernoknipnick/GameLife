@@ -85,6 +85,15 @@ describe('приложение поднимается', () => {
     expect(screen.getByRole('button', { name: 'Добавить привычку' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Выгрузить в файл' })).toBeTruthy();
   });
+
+  it('называет дисциплину пассивной прямо на главном экране', () => {
+    // FR-3.4b: отделить цветом мало, надо сказать словами.
+    посадить({ habits: [привычка()] });
+
+    render(<App />);
+
+    expect(screen.getByText(/Дисциплина растёт с любой привычки/)).toBeTruthy();
+  });
 });
 
 describe('живые действия', () => {
