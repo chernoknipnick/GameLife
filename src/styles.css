@@ -646,6 +646,56 @@ body {
   font-weight: 700;
 }
 
+/* --- Периодичность (FR-4.10, FR-4.11) --- */
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* 44 пикселя по высоте — нижняя граница по NFR-4.2. */
+.weekday {
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.weekday--on {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+.habit__schedule {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.resting {
+  margin-top: 20px;
+}
+
+.resting__title {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Приглушена сильнее выполненной: выполненную ещё можно отменить, а эту
+   сегодня трогать нечем. */
+.habit--resting {
+  opacity: 0.55;
+}
+
 /* --- Неделя (FR-10.1, FR-10.2) --- */
 
 .week {

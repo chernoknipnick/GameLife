@@ -4,6 +4,7 @@
 
 import { SCHEMA_VERSION } from './rules.js';
 import { DEFAULT_RESET_HOUR, dayKey, todayKey } from './day.js';
+import { DAILY, normalizeSchedule } from './schedule.js';
 
 /* Новый игрок начинает с чистого листа: первый уровень, пустой список с
    подсказкой. Имя «Герой» из раздела 6.1 спрашивает онбординг. */
@@ -25,13 +26,19 @@ export function createInitialState() {
   };
 }
 
-export function makeHabit(title, stat, difficulty, resetHour = DEFAULT_RESET_HOUR) {
+export function makeHabit(
+  title,
+  stat,
+  difficulty,
+  resetHour = DEFAULT_RESET_HOUR,
+  schedule = DAILY
+) {
   return {
     id: String(Date.now()) + Math.random().toString(36).slice(2, 7),
     title,
     stat,
     difficulty,
-    schedule: 'daily',
+    schedule: normalizeSchedule(schedule),
     streak: 0,
     bestStreak: 0,
     lastDone: null,

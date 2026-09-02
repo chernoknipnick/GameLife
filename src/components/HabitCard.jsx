@@ -1,9 +1,18 @@
 import { STATS, disciplineFor } from '../state/rules.js';
 import { pluralDays } from '../state/day.js';
 import { activeStreak, isDoneToday, xpFor } from '../state/selectors.js';
+import { describeSchedule } from '../state/schedule.js';
 import { ActionIcon, FlameIcon, PENCIL, TRASH } from './icons.jsx';
 
-export default function HabitCard({ game, habit, onComplete, onUndo, onEdit, onDelete }) {
+export default function HabitCard({
+  game,
+  habit,
+  resting = false,
+  onComplete,
+  onUndo,
+  onEdit,
+  onDelete,
+}) {
   const stat = STATS[habit.stat];
   const done = isDoneToday(game, habit);
   const gain = xpFor(game, habit);
@@ -12,8 +21,12 @@ export default function HabitCard({ game, habit, onComplete, onUndo, onEdit, onD
      числом, и огонёк врал бы про серию, которой уже нет (FR-7.3). */
   const streakDays = activeStreak(game, habit);
 
+  const план = describeSchedule(habit.schedule);
+
   return (
-    <li className={'habit' + (done ? ' habit--completed' : '')}>
+    <li
+      className={'habit' + (done ? ' habit--completed' : '') + (resting ? ' habit--resting' : '')}
+    >
       <div className="habit__row">
         <div className="habit__info">
           <p className="habit__title">{habit.title}</p>
@@ -24,6 +37,9 @@ export default function HabitCard({ game, habit, onComplete, onUndo, onEdit, onD
             <span className="habit__gain">
               {done ? 'Готово' : '+' + gain + ' · +' + disciplineFor(gain) + ' ДИС'}
             </span>
+            {/* Подпись только у привычек с расписанием: у ежедневной она
+                была бы шумом на каждой карточке. */}
+            {план && <span className="habit__schedule">{план}</span>}
           </p>
         </div>
 
@@ -57,19 +73,22 @@ export default function HabitCard({ game, habit, onComplete, onUndo, onEdit, onD
       </div>
 
       {/* Отмена доступна в течение суток (FR-4.9). Подтверждения нет
-          намеренно: оно сломало бы отметку в два действия. */}
-      <button
-        type="button"
-        className={done ? 'btn btn--undo' : 'btn btn--done'}
-        aria-label={
-          (done ? 'Отменить выполнение привычки «' : 'Отметить выполненной привычку «') +
-          habit.title +
-          '»'
-        }
-        onClick={() => (done ? onUndo(habit.id) : onComplete(habit.id))}
-      >
-        {done ? 'Отменить' : 'Выполнено'}
-      </button>
+          намеренно: оно сломало бы отметку в два действия.
+          В незапланированный день кнопки нет вовсе: выполнять нечего. */}
+      {!resting && (
+        <button
+          type="button"
+          className={done ? 'btn btn--undo' : 'btn btn--done'}
+          aria-label={
+            (done ? 'Отменить выполнение привычки «' : 'Отметить выполненной привычку «') +
+            habit.title +
+            '»'
+          }
+          onClick={() => (done ? onUndo(habit.id) : onComplete(habit.id))}
+        >
+          {done ? 'Отменить' : 'Выполнено'}
+        </button>
+      )}
     </li>
   );
 }

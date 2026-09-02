@@ -1,6 +1,12 @@
 import { useRef } from 'react';
 import { DAILY_LIMIT } from '../state/rules.js';
-import { activeHabits, hasProgress, isDoneToday, xpToday } from '../state/selectors.js';
+import {
+  hasProgress,
+  isDoneToday,
+  restingHabits,
+  todayHabits,
+  xpToday,
+} from '../state/selectors.js';
 import HabitCard from './HabitCard.jsx';
 import Week from './Week.jsx';
 
@@ -16,7 +22,8 @@ export default function Today({
   onReset,
 }) {
   const fileRef = useRef(null);
-  const visible = activeHabits(game);
+  const visible = todayHabits(game);
+  const resting = restingHabits(game);
   const doneCount = visible.filter((habit) => isDoneToday(game, habit)).length;
 
   return (
@@ -52,6 +59,33 @@ export default function Today({
           опыт персонажу.
         </p>
       </div>
+
+      {/* FR-4.11 требует не показывать привычку в незапланированный день.
+          Спрятать совсем нельзя: навигации нет, и до такой привычки стало
+          бы не добраться — ни поправить, ни удалить. Поэтому она уходит в
+          отдельный приглушённый список без кнопки выполнения. */}
+      {resting.length > 0 && (
+        <section className="resting" aria-labelledby="resting-title">
+          <h2 className="resting__title" id="resting-title">
+            Не сегодня
+          </h2>
+
+          <ul className="habits">
+            {resting.map((habit) => (
+              <HabitCard
+                key={habit.id}
+                game={game}
+                habit={habit}
+                resting
+                onComplete={onComplete}
+                onUndo={onUndo}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
+          </ul>
+        </section>
+      )}
 
       <button className="btn btn--add" type="button" onClick={onCreate}>
         Добавить привычку

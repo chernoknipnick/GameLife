@@ -259,6 +259,94 @@ describe('привычки', () => {
   });
 });
 
+describe('серии по расписанию', () => {
+  /* 2026-08-31 — понедельник, 09-02 — среда, 09-04 — пятница.
+     Привычка на понедельник-среду-пятницу: вторник для неё не пропуск. */
+  const ПНСРПТ = { type: 'weekdays', days: [1, 3, 5] };
+
+  function вСреду(изменения) {
+    vi.setSystemTime(new Date(2026, 8, 2, 12, 0));
+    return старт(изменения);
+  }
+
+  it('пропущенный вторник не обрывает серию', () => {
+    const было = вСреду({
+      habits: [привычка({ schedule: ПНСРПТ, streak: 1, lastDone: '2026-08-31' })],
+      history: [{ date: '2026-08-31', habitId: 'h1', xp: 25 }],
+    });
+
+    const стало = reducer(было, { type: 'complete', id: 'h1' });
+
+    expect(стало.game.habits[0].streak).toBe(2);
+  });
+
+  it('пропущенный запланированный день серию обрывает', () => {
+    // Выполнено в понедельник, сегодня пятница — среда пропущена.
+    vi.setSystemTime(new Date(2026, 8, 4, 12, 0));
+    const было = старт({
+      habits: [привычка({ schedule: ПНСРПТ, streak: 5, lastDone: '2026-08-31' })],
+      history: [{ date: '2026-08-31', habitId: 'h1', xp: 25 }],
+    });
+
+    const стало = reducer(было, { type: 'complete', id: 'h1' });
+
+    expect(стало.game.habits[0].streak).toBe(1);
+    expect(стало.game.habits[0].bestStreak).toBe(5);
+  });
+
+  it('множитель за серию доступен и привычке с расписанием', () => {
+    /* Ради этого серия и считается по расписанию: иначе у непостоянной
+       привычки она навсегда застряла бы на единице. */
+    const было = вСреду({
+      habits: [привычка({ schedule: ПНСРПТ, streak: 3, lastDone: '2026-08-31' })],
+      history: [{ date: '2026-08-31', habitId: 'h1', xp: 25 }],
+    });
+
+    const стало = reducer(было, { type: 'complete', id: 'h1' });
+
+    expect(стало.game.character.stats.strength).toBe(28);
+  });
+
+  it('смена расписания пересчитывает серию по истории', () => {
+    /* Три дня подряд по календарю — серия 3 у ежедневной. У привычки на
+       понедельник-среду-пятницу это серия 2: понедельник и среда идут
+       подряд по её расписанию, а вторник в счёт не идёт вовсе. */
+    const было = вСреду({
+      habits: [привычка({ streak: 3, lastDone: '2026-09-02' })],
+      history: [
+        { date: '2026-08-31', habitId: 'h1', xp: 25 },
+        { date: '2026-09-01', habitId: 'h1', xp: 25 },
+        { date: '2026-09-02', habitId: 'h1', xp: 25 },
+      ],
+    });
+
+    const стало = reducer(было, {
+      type: 'update',
+      id: 'h1',
+      title: 'Тест',
+      stat: 'strength',
+      difficulty: 'medium',
+      schedule: ПНСРПТ,
+    });
+
+    expect(стало.game.habits[0].streak).toBe(2);
+  });
+
+  it('правка без расписания его не трогает', () => {
+    const было = вСреду({ habits: [привычка({ schedule: ПНСРПТ })] });
+
+    const стало = reducer(было, {
+      type: 'update',
+      id: 'h1',
+      title: 'Другое имя',
+      stat: 'strength',
+      difficulty: 'medium',
+    });
+
+    expect(стало.game.habits[0].schedule).toEqual(ПНСРПТ);
+  });
+});
+
 describe('сброс и загрузка', () => {
   it('сброс возвращает к началу и снова показывает знакомство', () => {
     const было = старт({ habits: [привычка()] });
