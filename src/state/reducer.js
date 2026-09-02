@@ -21,7 +21,7 @@ import {
   streakMultiplier,
   xpToNextLevel,
 } from './rules.js';
-import { dayBefore } from './day.js';
+import { normalizeSchedule, previousScheduledDay } from './schedule.js';
 import { rebuildStreak } from './streaks.js';
 import { createInitialState, makeHabit } from './schema.js';
 import { activeHabits, findHabit, isDoneToday, today, xpToday } from './selectors.js';
@@ -72,7 +72,10 @@ function complete(prev, id) {
   if (!habit || isDoneToday(game, habit)) return prev;
 
   const day = today(game);
-  const continues = habit.lastDone === dayBefore(day);
+  /* «Вчера» для привычки с расписанием — это её предыдущий день, а не
+     календарное вчера: пропущенный вторник у привычки на пн-ср-пт
+     пропуском не считается (FR-4.10). */
+  const continues = habit.lastDone === previousScheduledDay(habit.schedule, day);
 
   /* Множитель заслужен вчерашними днями, а не сегодняшним нажатием,
      поэтому считаем по серии ДО начисления. Оборванная серия множителя
@@ -167,7 +170,7 @@ function undo(prev, id) {
   );
 }
 
-function add(prev, { title, stat, difficulty }) {
+function add(prev, { title, stat, difficulty, schedule }) {
   const clean = title.trim().slice(0, MAX_TITLE_LENGTH);
   if (!clean) return withToast(prev, 'Введите название привычки');
 
@@ -180,7 +183,7 @@ function add(prev, { title, stat, difficulty }) {
   }
 
   const game = copy(prev.game);
-  game.habits.push(makeHabit(clean, stat, difficulty, game.settings.dayResetHour));
+  game.habits.push(makeHabit(clean, stat, difficulty, game.settings.dayResetHour, schedule));
 
   return withToast({ ...prev, game }, 'Привычка «' + clean + '» добавлена');
 }
@@ -195,7 +198,7 @@ function add(prev, { title, stat, difficulty }) {
  *
  * Серия и рекорд не трогаются: смена названия — не пропуск дня.
  */
-function update(prev, { id, title, stat, difficulty }) {
+function update(prev, { id, title, stat, difficulty, schedule }) {
   const clean = title.trim().slice(0, MAX_TITLE_LENGTH);
   if (!clean) return withToast(prev, 'Введите название привычки');
 
@@ -206,6 +209,18 @@ function update(prev, { id, title, stat, difficulty }) {
   habit.title = clean;
   habit.stat = stat;
   habit.difficulty = difficulty;
+
+  /* Расписание не передали — значит не меняем. Иначе правка названия
+     молча переводила бы привычку на ежедневную. */
+  const wasSchedule = JSON.stringify(normalizeSchedule(habit.schedule));
+  habit.schedule =
+    schedule === undefined ? normalizeSchedule(habit.schedule) : normalizeSchedule(schedule);
+
+  /* Смена расписания — единственная правка, которая трогает серию: серия
+     считается шагами по расписанию, и при новом наборе дней прежнее число
+     означает уже не то. Пересчёт идёт по истории и потому ничего не
+     выдумывает — просто перечитывает то, что было. */
+  if (JSON.stringify(habit.schedule) !== wasSchedule) rebuildStreak(game.history, habit);
 
   return withToast({ ...prev, game }, 'Привычка «' + clean + '» изменена');
 }

@@ -2,7 +2,7 @@
    правды. Поля streak, lastDone и bestStreak в сохранении лишь кэшируют
    этот расчёт, и расходиться с ним они не должны. */
 
-import { dayBefore, nextDay } from './day.js';
+import { nextScheduledDay, previousScheduledDay } from './schedule.js';
 
 /**
  * Пересчитывает серию, последнее выполнение и рекорд привычки по истории.
@@ -26,24 +26,28 @@ export function rebuildStreak(history, habit) {
 
   habit.lastDone = last;
 
+  /* Шаг назад делается по расписанию привычки, а не по календарю: у
+     привычки на понедельник-среду-пятницу пропущенный вторник — не
+     пропуск, и «предыдущий день» для неё это предыдущая пятница или
+     среда (FR-4.10). Для ежедневной это по-прежнему вчера. */
   let current = 0;
   let cursor = last;
   while (cursor && days[cursor]) {
     current += 1;
-    cursor = dayBefore(cursor);
+    cursor = previousScheduledDay(habit.schedule, cursor);
   }
   habit.streak = current;
 
   let best = 0;
   Object.keys(days).forEach((date) => {
     // Считаем только от начала серии, иначе один отрезок пройдём многократно.
-    if (days[dayBefore(date)]) return;
+    if (days[previousScheduledDay(habit.schedule, date)]) return;
 
     let run = 0;
     let walk = date;
     while (days[walk]) {
       run += 1;
-      walk = nextDay(walk);
+      walk = nextScheduledDay(habit.schedule, walk);
     }
     if (run > best) best = run;
   });

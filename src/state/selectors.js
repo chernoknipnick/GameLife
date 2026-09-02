@@ -3,6 +3,7 @@
 
 import { DAILY_LIMIT, WEEK_DAYS, streakMultiplier, DIFFICULTY } from './rules.js';
 import { dayBefore, daysBetween, todayKey } from './day.js';
+import { isScheduledOn, previousScheduledDay } from './schedule.js';
 
 export function today(state) {
   return todayKey(state.settings.dayResetHour);
@@ -21,10 +22,30 @@ export function isDoneToday(state, habit) {
   return habit.lastDone === today(state);
 }
 
-/** Серия, которая действует прямо сейчас: после пропуска она обнуляется. */
+/** Запланирована ли привычка на сегодня (FR-4.11). */
+export function isScheduledToday(state, habit) {
+  return isScheduledOn(habit.schedule, today(state));
+}
+
+/** Привычки, которые сегодня в деле. */
+export function todayHabits(state) {
+  return activeHabits(state).filter((habit) => isScheduledToday(state, habit));
+}
+
+/** Привычки, которые есть, но сегодня не запланированы. */
+export function restingHabits(state) {
+  return activeHabits(state).filter((habit) => !isScheduledToday(state, habit));
+}
+
+/**
+ * Серия, которая действует прямо сейчас: после пропуска она обнуляется.
+ * «Пропуск» считается по расписанию привычки, а не по календарю.
+ */
 export function activeStreak(state, habit) {
   if (isDoneToday(state, habit)) return habit.streak;
-  return habit.lastDone === dayBefore(today(state)) ? habit.streak : 0;
+  return habit.lastDone === previousScheduledDay(habit.schedule, today(state))
+    ? habit.streak
+    : 0;
 }
 
 /** Опыт, который принесёт следующее выполнение, с учётом живой серии. */
@@ -108,7 +129,13 @@ export function weekSummary(state) {
   let totalPossible = 0;
 
   const list = days.map((date) => {
-    const possible = habits.filter((habit) => !habit.createdAt || habit.createdAt <= date).length;
+    /* В знаменатель идут только те привычки, которые в этот день были
+       запланированы: непропущенный вторник у привычки на понедельник и
+       среду — не невыполнение (FR-4.11). */
+    const possible = habits.filter(
+      (habit) =>
+        (!habit.createdAt || habit.createdAt <= date) && isScheduledOn(habit.schedule, date)
+    ).length;
     const count = done[date] || 0;
 
     totalDone += count;

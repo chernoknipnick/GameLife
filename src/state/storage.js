@@ -7,6 +7,7 @@ import { ALL_STATS, BACKUP_KEY, DIFFICULTY, SCHEMA_VERSION, STATS, STORAGE_KEY }
 import { DEFAULT_RESET_HOUR } from './day.js';
 import { createInitialState } from './schema.js';
 import { rebuildStreak } from './streaks.js';
+import { normalizeSchedule } from './schedule.js';
 
 function isFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value);
@@ -80,6 +81,9 @@ export function normalizeState(loaded) {
      заплатки на одном импорте. */
   loaded.habits.forEach((habit) => {
     habit.archived = habit.archived === true;
+    /* Расписание приводится до пересчёта серий: они по нему и шагают.
+       Строка 'daily' из сохранений v0.1—v0.3 понимается как прежде. */
+    habit.schedule = normalizeSchedule(habit.schedule);
     rebuildStreak(loaded.history, habit);
   });
 

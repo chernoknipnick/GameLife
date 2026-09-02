@@ -18,7 +18,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import App from './App.jsx';
 import { createInitialState } from './state/schema.js';
 import { STORAGE_KEY } from './state/rules.js';
-import { todayKey } from './state/day.js';
+import { todayKey, weekdayIndex } from './state/day.js';
 
 function посадить(изменения) {
   const game = { ...createInitialState(), ...изменения };
@@ -145,6 +145,38 @@ describe('живые действия', () => {
 
     expect(screen.getByText('Зарядка')).toBeTruthy();
     expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY)).habits).toHaveLength(1);
+  });
+});
+
+describe('расписание привычек', () => {
+  it('незапланированная привычка уходит в «Не сегодня» без кнопки, но с правкой', () => {
+    /* FR-4.11 требует не показывать её в списке дня. Спрятать совсем
+       нельзя: навигации нет, и привычка стала бы недосягаемой. */
+    const завтра = (weekdayIndex(todayKey(4)) + 1) % 7;
+
+    посадить({
+      habits: [
+        привычка({ id: 'today', title: 'Сегодняшняя' }),
+        привычка({
+          id: 'rest',
+          title: 'Не сегодня',
+          schedule: { type: 'weekdays', days: [завтра] },
+        }),
+      ],
+    });
+
+    render(<App />);
+
+    expect(screen.getByRole('heading', { name: 'Не сегодня' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Изменить привычку «Не сегодня»/ })).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: /Отметить выполненной привычку «Не сегодня»/ })
+    ).toBeNull();
+
+    // А сегодняшняя выполняется как обычно.
+    expect(
+      screen.getByRole('button', { name: /Отметить выполненной привычку «Сегодняшняя»/ })
+    ).toBeTruthy();
   });
 });
 
