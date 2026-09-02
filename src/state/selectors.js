@@ -43,9 +43,7 @@ export function restingHabits(state) {
  */
 export function activeStreak(state, habit) {
   if (isDoneToday(state, habit)) return habit.streak;
-  return habit.lastDone === previousScheduledDay(habit.schedule, today(state))
-    ? habit.streak
-    : 0;
+  return habit.lastDone === previousScheduledDay(habit.schedule, today(state)) ? habit.streak : 0;
 }
 
 /** Опыт, который принесёт следующее выполнение, с учётом живой серии. */
