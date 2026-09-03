@@ -9,6 +9,17 @@ export const PENCIL =
 export const TRASH =
   'M3 5.5h14M8 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M5 5.5l.8 11a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9l.8-11';
 
+/* Шесть точек — общепринятый знак «можно тащить». */
+export function GripIcon() {
+  return (
+    <svg className="icon-action" viewBox="0 0 20 20" aria-hidden="true">
+      {[6, 10, 14].map((y) =>
+        [7, 13].map((x) => <circle cx={x} cy={y} r="1.4" fill="currentColor" key={x + '-' + y} />)
+      )}
+    </svg>
+  );
+}
+
 export function FlameIcon() {
   return (
     <svg className="icon" viewBox="0 0 10 12" aria-hidden="true">

@@ -2,16 +2,20 @@ import { STATS, disciplineFor } from '../state/rules.js';
 import { pluralDays } from '../state/day.js';
 import { activeStreak, isDoneToday, xpFor } from '../state/selectors.js';
 import { describeSchedule } from '../state/schedule.js';
-import { ActionIcon, FlameIcon, PENCIL, TRASH } from './icons.jsx';
+import { ActionIcon, FlameIcon, GripIcon, PENCIL, TRASH } from './icons.jsx';
 
 export default function HabitCard({
   game,
   habit,
   resting = false,
+  draggable = false,
+  dragging = false,
   onComplete,
   onUndo,
   onEdit,
   onDelete,
+  onMove,
+  onGrab,
 }) {
   const stat = STATS[habit.stat];
   const done = isDoneToday(game, habit);
@@ -23,9 +27,17 @@ export default function HabitCard({
 
   const план = describeSchedule(habit.schedule);
 
+  /* Идентификатор в разметке нужен перетаскиванию: по нему Today.jsx
+     узнаёт, над какой карточкой сейчас палец. */
   return (
     <li
-      className={'habit' + (done ? ' habit--completed' : '') + (resting ? ' habit--resting' : '')}
+      data-habit-id={habit.id}
+      className={
+        'habit' +
+        (done ? ' habit--completed' : '') +
+        (resting ? ' habit--resting' : '') +
+        (dragging ? ' habit--dragging' : '')
+      }
     >
       <div className="habit__row">
         <div className="habit__info">
@@ -44,6 +56,25 @@ export default function HabitCard({
         </div>
 
         <div className="habit__actions">
+          {/* FR-4.12. Ручка работает и указателем, и стрелками: тащить
+              мышью или пальцем может не каждый, а порядок нужен всем.
+              Клавиатурный путь здесь не запасной, а равноправный. */}
+          {draggable && (
+            <button
+              type="button"
+              className="habit__action habit__action--grip"
+              aria-label={'Переместить привычку «' + habit.title + '», стрелками вверх и вниз'}
+              onPointerDown={(event) => onGrab(event, habit)}
+              onKeyDown={(event) => {
+                if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+                event.preventDefault();
+                onMove(habit, event.key === 'ArrowUp' ? -1 : 1);
+              }}
+            >
+              <GripIcon />
+            </button>
+          )}
+
           {streakDays > 0 && (
             <p className="pill pill--fire">
               <FlameIcon />
