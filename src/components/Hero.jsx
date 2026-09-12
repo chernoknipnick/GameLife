@@ -1,8 +1,8 @@
 import { DAILY_LIMIT, xpToNextLevel } from '../state/rules.js';
 import { appStreak, xpToday } from '../state/selectors.js';
-import { FlameIcon } from './icons.jsx';
+import { FlameIcon, GearIcon } from './icons.jsx';
 
-export default function Hero({ game }) {
+export default function Hero({ game, onSettings }) {
   const character = game.character;
   const need = xpToNextLevel(character.level);
   const percent = Math.round((character.xp / need) * 100);
@@ -17,6 +17,14 @@ export default function Hero({ game }) {
         </div>
 
         <div className="hero__badges">
+          {/* Вход в настройки для узкого экрана: бокового меню там нет,
+              а другого пути в раздел не существует. На десктопе кнопка
+              скрыта — её работу делает меню. */}
+          <button className="hero__gear" type="button" onClick={onSettings}>
+            <GearIcon />
+            <span className="visually-hidden">Настройки</span>
+          </button>
+
           <p className="pill pill--streak" title="Дней подряд в приложении" hidden={streak === 0}>
             <FlameIcon />
             <span>{streak}</span>

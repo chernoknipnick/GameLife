@@ -3,22 +3,28 @@ import { humanDate, pluralDays } from '../state/day.js';
 /* Будущие разделы показаны с пометкой релиза и помечены aria-disabled:
    они спроектированы в ТЗ, но притворяться работающими ссылками не должны.
 
-   Пометка релиза — обещание, и врать в ней нельзя. «Настройки» до
-   27.08.2026 стояли с меткой v0.2, хотя тот релиз уже вышел, а раздела
-   не появилось. Содержимое настроек для v0.2 при этом сделано — сброс,
-   выгрузка и загрузка живут внизу главного экрана; не хватало именно
-   отдельного экрана. Метка исправлена на v0.4: раньше отдельного экрана
-   не из чего делать, а в v0.4 навигация появится ради каталога, и тогда
-   же понадобятся настройки аккаунта. */
+   Пометка релиза — обещание, и врать в ней нельзя. «Настройки» дважды
+   пережили обещанный релиз, не появившись: метка стояла сначала v0.2,
+   потом v0.4. Теперь раздел есть, и в этом списке его больше нет.
+
+   «Каталог» переехал с v0.4 на v0.5 решением Владимира 12.09.2026:
+   каталог с голосованием — отдельная поверхность со своим экраном,
+   правами и модерацией, и вместе с аккаунтами он сделал бы релиз из
+   двух несвязанных половин. */
 export const SECTIONS = [
-  { title: 'Каталог', release: 'v0.4', round: true },
+  { title: 'Каталог', release: 'v0.5', round: true },
   { title: 'Задачи', release: 'v0.5', round: false },
   { title: 'Цели и боссы', release: 'v0.5', round: true },
   { title: 'Прогресс', release: 'v0.6', round: false },
-  { title: 'Настройки', release: 'v0.4', round: true },
 ];
 
-export default function Sidebar({ streak, days, since }) {
+/* Разделы, которые уже работают. Порядок тот же, что на экране. */
+export const SCREENS = [
+  { id: 'today', title: 'Панель', round: false },
+  { id: 'settings', title: 'Настройки', round: true },
+];
+
+export default function Sidebar({ streak, days, since, screen, onNavigate }) {
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
@@ -27,10 +33,21 @@ export default function Sidebar({ streak, days, since }) {
       </div>
 
       <nav className="sidebar__nav" aria-label="Разделы">
-        <span className="navitem navitem--active" aria-current="page">
-          <span className="navitem__mark" aria-hidden="true" />
-          Панель
-        </span>
+        {SCREENS.map((item) => (
+          <button
+            type="button"
+            className={'navitem' + (screen === item.id ? ' navitem--active' : '')}
+            aria-current={screen === item.id ? 'page' : undefined}
+            key={item.id}
+            onClick={() => onNavigate(item.id)}
+          >
+            <span
+              className={'navitem__mark' + (item.round ? ' navitem__mark--round' : '')}
+              aria-hidden="true"
+            />
+            {item.title}
+          </button>
+        ))}
 
         {SECTIONS.map((section) => (
           <span className="navitem" aria-disabled="true" key={section.title}>
