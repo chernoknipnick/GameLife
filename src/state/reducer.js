@@ -226,6 +226,33 @@ function update(prev, { id, title, stat, difficulty, schedule }) {
 }
 
 /**
+ * Переставляет привычку на место другой (FR-4.12).
+ *
+ * Порядок хранится самим порядком массива — отдельного поля не заводится:
+ * лишнее число пришлось бы держать согласованным при каждом создании и
+ * удалении, а массив и так упорядочен.
+ *
+ * Адресуемся идентификаторами, а не номерами: на экране список может быть
+ * отфильтрован расписанием (FR-4.11), и номер видимой карточки не совпал
+ * бы с номером в массиве.
+ */
+function reorder(prev, { id, targetId }) {
+  if (id === targetId) return prev;
+
+  const game = copy(prev.game);
+  const from = game.habits.findIndex((habit) => habit.id === id);
+  const to = game.habits.findIndex((habit) => habit.id === targetId);
+  if (from < 0 || to < 0) return prev;
+
+  const [moved] = game.habits.splice(from, 1);
+  game.habits.splice(to, 0, moved);
+
+  /* Без сообщения: перестановка видна сама по себе, а всплывающая
+     подсказка на каждый шаг стрелкой превратилась бы в мельтешение. */
+  return { ...prev, game };
+}
+
+/**
  * Удаляет привычку. Записи в истории остаются: они уже принесли опыт,
  * и стирать их значило бы задним числом отнять заработанное.
  */
@@ -272,6 +299,8 @@ export function reducer(prev, action) {
       return update(prev, action);
     case 'remove':
       return remove(prev, action.id);
+    case 'reorder':
+      return reorder(prev, action);
 
     /* Сброс возвращает в начало целиком, включая знакомство (FR-15.1). */
     case 'reset':

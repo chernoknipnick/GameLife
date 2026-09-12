@@ -118,6 +118,7 @@ export default function App() {
         }}
         onImport={importFile}
         onReset={askReset}
+        onReorder={(id, targetId) => dispatch({ type: 'reorder', id, targetId })}
       />
 
       <Toast toast={toast} onHide={hideToast} />

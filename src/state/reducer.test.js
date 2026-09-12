@@ -259,6 +259,60 @@ describe('привычки', () => {
   });
 });
 
+describe('порядок привычек', () => {
+  function трое() {
+    return старт({
+      habits: [
+        привычка({ id: 'a', title: 'Первая' }),
+        привычка({ id: 'b', title: 'Вторая' }),
+        привычка({ id: 'c', title: 'Третья' }),
+      ],
+    });
+  }
+
+  const порядок = (state) => state.game.habits.map((h) => h.id).join('');
+
+  it('переставляет вниз', () => {
+    const стало = reducer(трое(), { type: 'reorder', id: 'a', targetId: 'b' });
+    expect(порядок(стало)).toBe('bac');
+  });
+
+  it('переставляет вверх', () => {
+    const стало = reducer(трое(), { type: 'reorder', id: 'c', targetId: 'a' });
+    expect(порядок(стало)).toBe('cab');
+  });
+
+  it('перенос через всю длину сохраняет остальных', () => {
+    const стало = reducer(трое(), { type: 'reorder', id: 'a', targetId: 'c' });
+    expect(порядок(стало)).toBe('bca');
+  });
+
+  it('перестановка на себя ничего не меняет', () => {
+    const было = трое();
+    expect(reducer(было, { type: 'reorder', id: 'b', targetId: 'b' })).toBe(было);
+  });
+
+  it('неизвестный идентификатор ничего не ломает', () => {
+    const было = трое();
+    expect(reducer(было, { type: 'reorder', id: 'a', targetId: 'нет' })).toBe(было);
+    expect(reducer(было, { type: 'reorder', id: 'нет', targetId: 'a' })).toBe(было);
+  });
+
+  it('не меняет прежнее состояние и не трогает содержимое привычек', () => {
+    const было = трое();
+    const стало = reducer(было, { type: 'reorder', id: 'a', targetId: 'c' });
+
+    expect(порядок(было)).toBe('abc');
+    expect(стало.game.habits.map((h) => h.title).sort()).toEqual(['Вторая', 'Первая', 'Третья']);
+  });
+
+  it('порядок уходит в сохраняемое состояние', () => {
+    // Порядок хранится самим массивом, отдельного поля нет.
+    const стало = reducer(трое(), { type: 'reorder', id: 'c', targetId: 'a' });
+    expect(JSON.parse(JSON.stringify(стало.game)).habits.map((h) => h.id)).toEqual(['c', 'a', 'b']);
+  });
+});
+
 describe('серии по расписанию', () => {
   /* 2026-08-31 — понедельник, 09-02 — среда, 09-04 — пятница.
      Привычка на понедельник-среду-пятницу: вторник для неё не пропуск. */

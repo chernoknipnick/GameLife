@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { DAILY_LIMIT } from '../state/rules.js';
 import {
   hasProgress,
@@ -20,11 +20,55 @@ export default function Today({
   onExport,
   onImport,
   onReset,
+  onReorder,
 }) {
   const fileRef = useRef(null);
+  const [dragId, setDragId] = useState(null);
+
   const visible = todayHabits(game);
   const resting = restingHabits(game);
   const doneCount = visible.filter((habit) => isDoneToday(game, habit)).length;
+
+  /* Перестановка стрелками (FR-4.12). Соседа ищем в видимом списке, а не
+     в массиве: между двумя сегодняшними привычками может лежать
+     незапланированная, и шаг «на единицу по массиву» увёл бы не туда. */
+  function moveBy(habit, delta) {
+    const at = visible.findIndex((item) => item.id === habit.id);
+    const target = visible[at + delta];
+    if (target) onReorder(habit.id, target.id);
+  }
+
+  /* Перетаскивание указателем — одним обработчиком и для мыши, и для
+     пальца. Захват указателя нужен, чтобы события не терялись, когда
+     палец уходит за пределы кнопки. */
+  function grab(event, habit) {
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragId(habit.id);
+
+    const move = (moveEvent) => {
+      const под = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY);
+      const карточка = под && под.closest('[data-habit-id]');
+      const targetId = карточка && карточка.dataset.habitId;
+
+      // Переставляем только внутри сегодняшнего списка.
+      if (!targetId || targetId === habit.id) return;
+      if (!visible.some((item) => item.id === targetId)) return;
+
+      onReorder(habit.id, targetId);
+    };
+
+    const drop = () => {
+      setDragId(null);
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', drop);
+      document.removeEventListener('pointercancel', drop);
+    };
+
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', drop);
+    document.addEventListener('pointercancel', drop);
+  }
 
   return (
     <main className="today">
@@ -47,6 +91,11 @@ export default function Today({
             onUndo={onUndo}
             onEdit={onEdit}
             onDelete={onDelete}
+            /* Тащить нечего, пока привычка одна. */
+            draggable={visible.length > 1}
+            dragging={dragId === habit.id}
+            onMove={moveBy}
+            onGrab={grab}
           />
         ))}
       </ul>

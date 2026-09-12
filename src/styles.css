@@ -646,6 +646,25 @@ body {
   font-weight: 700;
 }
 
+/* --- Перестановка привычек (FR-4.12) --- */
+
+.habit__action--grip {
+  cursor: grab;
+  /* Браузер не должен принимать перетаскивание ручки за прокрутку. */
+  touch-action: none;
+}
+
+.habit__action--grip:active {
+  cursor: grabbing;
+}
+
+/* Карточка под пальцем приподнята, чтобы было видно, что именно едет. */
+.habit--dragging {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 8px 20px rgb(17 24 39 / 0.14);
+}
+
 /* --- Периодичность (FR-4.10, FR-4.11) --- */
 
 .weekdays {
