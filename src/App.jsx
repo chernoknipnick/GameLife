@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar.jsx';
 import Hero from './components/Hero.jsx';
 import Abilities from './components/Abilities.jsx';
 import Today from './components/Today.jsx';
+import Settings from './components/Settings.jsx';
 import HabitSheet from './components/HabitSheet.jsx';
 import ConfirmDialog from './components/ConfirmDialog.jsx';
 import LevelUpDialog from './components/LevelUpDialog.jsx';
@@ -21,12 +22,25 @@ export default function App() {
   const [sheet, setSheet] = useState(null); // {habit} или {habit: null} на создание
   const [confirm, setConfirm] = useState(null);
 
+  /* Открытый раздел — тоже состояние интерфейса: в сохранение ему
+     незачем, а при следующем запуске человек ждёт главный экран, а не
+     тот, где закрыл вкладку. */
+  const [screen, setScreen] = useState('today');
+
   const { game, isNewPlayer, levelUp, toast } = state;
 
   // Сохраняем при каждом изменении игрового состояния — и только его.
   useEffect(() => {
     saveState(game);
   }, [game]);
+
+  /* Тема живёт на корневом элементе: переменные в `[data-theme]`
+     переопределяют `:root`, и одного признака хватает на весь документ
+     (FR-15.4). До первой отрисовки то же самое делает встроенный скрипт
+     в index.html — иначе тёмной теме предшествовала бы белая вспышка. */
+  useEffect(() => {
+    document.documentElement.dataset.theme = game.settings.theme;
+  }, [game.settings.theme]);
 
   /* Предупреждение о непригодном сохранении ждёт, пока освободится
      экран: во время знакомства всплывающую подсказку не видно. */
@@ -100,26 +114,40 @@ export default function App() {
   }
 
   return (
-    <div className="app">
-      <Sidebar streak={appStreak(game)} days={daysInGame(game)} since={game.character.createdAt} />
-      <Hero game={game} />
+    <div className={'app' + (screen === 'settings' ? ' app--settings' : '')}>
+      <Sidebar
+        streak={appStreak(game)}
+        days={daysInGame(game)}
+        since={game.character.createdAt}
+        screen={screen}
+        onNavigate={setScreen}
+      />
+      <Hero game={game} onSettings={() => setScreen('settings')} />
       <Abilities stats={game.character.stats} />
 
-      <Today
-        game={game}
-        onComplete={(id) => dispatch({ type: 'complete', id })}
-        onUndo={(id) => dispatch({ type: 'undo', id })}
-        onEdit={(habit) => setSheet({ habit })}
-        onDelete={askDelete}
-        onCreate={() => setSheet({ habit: null })}
-        onExport={() => {
-          exportGame(game);
-          dispatch({ type: 'notice', text: 'Файл с прогрессом сохранён' });
-        }}
-        onImport={importFile}
-        onReset={askReset}
-        onReorder={(id, targetId) => dispatch({ type: 'reorder', id, targetId })}
-      />
+      {screen === 'settings' ? (
+        <Settings
+          game={game}
+          onTheme={(theme) => dispatch({ type: 'setTheme', theme })}
+          onExport={() => {
+            exportGame(game);
+            dispatch({ type: 'notice', text: 'Файл с прогрессом сохранён' });
+          }}
+          onImport={importFile}
+          onReset={askReset}
+          onBack={() => setScreen('today')}
+        />
+      ) : (
+        <Today
+          game={game}
+          onComplete={(id) => dispatch({ type: 'complete', id })}
+          onUndo={(id) => dispatch({ type: 'undo', id })}
+          onEdit={(habit) => setSheet({ habit })}
+          onDelete={askDelete}
+          onCreate={() => setSheet({ habit: null })}
+          onReorder={(id, targetId) => dispatch({ type: 'reorder', id, targetId })}
+        />
+      )}
 
       <Toast toast={toast} onHide={hideToast} />
 

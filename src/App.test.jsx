@@ -83,7 +83,11 @@ describe('приложение поднимается', () => {
     expect(screen.getByRole('heading', { name: 'Неделя' })).toBeTruthy();
     expect(screen.getByLabelText('Характеристики')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Добавить привычку' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Выгрузить в файл' })).toBeTruthy();
+    /* Входов в настройки два: пункт бокового меню и шестерёнка в шапке.
+       Медиазапросы в jsdom не действуют, поэтому в разметке они оба —
+       на живом экране видно ровно один. Потерять любой значит отрезать
+       от раздела либо десктоп, либо телефон. */
+    expect(screen.getAllByRole('button', { name: 'Настройки' })).toHaveLength(2);
   });
 
   it('называет дисциплину пассивной прямо на главном экране', () => {
@@ -240,6 +244,68 @@ describe('порядок привычек', () => {
     render(<App />);
 
     expect(screen.queryByRole('button', { name: /Переместить привычку/ })).toBeNull();
+  });
+});
+
+describe('навигация и тема', () => {
+  function входыВНастройки() {
+    return screen.getAllByRole('button', { name: 'Настройки' });
+  }
+
+  it('оба входа открывают настройки, и выгрузка живёт там', () => {
+    посадить({ habits: [привычка()] });
+
+    render(<App />);
+    // На главном экране выгрузки больше нет — она переехала в настройки.
+    expect(screen.queryByRole('button', { name: 'Выгрузить в файл' })).toBeNull();
+
+    // Путь десктопа: пункт бокового меню.
+    fireEvent.click(входыВНастройки()[0]);
+    expect(screen.getByRole('heading', { name: 'Настройки' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Выгрузить в файл' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Сегодня' })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Панель' }));
+    expect(screen.getByRole('heading', { name: 'Сегодня' })).toBeTruthy();
+
+    // Путь телефона: шестерёнка в шапке и кнопка «Назад».
+    fireEvent.click(входыВНастройки()[1]);
+    expect(screen.getByRole('heading', { name: 'Настройки' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Назад' }));
+    expect(screen.getByRole('heading', { name: 'Сегодня' })).toBeTruthy();
+  });
+
+  it('выбор тёмной темы виден документу и уходит в сохранение', () => {
+    посадить({ habits: [привычка()] });
+
+    render(<App />);
+    fireEvent.click(входыВНастройки()[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Тёмная' }));
+
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY)).settings.theme).toBe('dark');
+  });
+
+  /* Тема обязана пережить перезагрузку: иначе каждое открытие вкладки
+     возвращало бы человека к светлому экрану. */
+  it('сохранённая тёмная тема применяется при запуске', () => {
+    const game = createInitialState();
+    посадить({ settings: { ...game.settings, theme: 'dark' } });
+
+    render(<App />);
+
+    expect(document.documentElement.dataset.theme).toBe('dark');
+  });
+
+  /* Мусор в поле темы не должен оставлять документ без цветов. */
+  it('неизвестная тема из файла откатывается к светлой', () => {
+    const game = createInitialState();
+    посадить({ settings: { ...game.settings, theme: 'ночная' } });
+
+    render(<App />);
+
+    expect(document.documentElement.dataset.theme).toBe('light');
   });
 });
 

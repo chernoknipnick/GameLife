@@ -17,6 +17,29 @@
     />
   </head>
   <body>
+    <script>
+      /* Тема до первой отрисовки (FR-15.4). React ставит тот же признак,
+         но уже после загрузки скрипта — без этих строк тёмной теме
+         предшествовала бы белая вспышка во весь экран.
+
+         Ключ повторяет STORAGE_KEY из src/state/rules.js. Дублирование
+         сознательное: собранный модуль сюда не подключить, он и есть то,
+         чего мы ждём. */
+      try {
+        var сохранение = JSON.parse(localStorage.getItem('gamelife'));
+        var тема = сохранение && сохранение.settings && сохранение.settings.theme;
+
+        if (тема !== 'dark' && тема !== 'light') {
+          тема = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        document.documentElement.dataset.theme = тема;
+      } catch (e) {
+        /* Хранилище может быть запрещено настройками браузера — это уже
+           умеет переживать loadState, и оформление не повод падать. */
+      }
+    </script>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

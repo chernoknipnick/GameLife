@@ -22,6 +22,7 @@ import {
   xpToNextLevel,
 } from './rules.js';
 import { normalizeSchedule, previousScheduledDay } from './schedule.js';
+import { normalizeTheme } from './theme.js';
 import { rebuildStreak } from './streaks.js';
 import { createInitialState, makeHabit } from './schema.js';
 import { activeHabits, findHabit, isDoneToday, today, xpToday } from './selectors.js';
@@ -253,6 +254,21 @@ function reorder(prev, { id, targetId }) {
 }
 
 /**
+ * Переключает тему оформления (FR-15.4).
+ *
+ * Тема живёт в сохранении, а не в состоянии интерфейса: выбор должен
+ * пережить перезагрузку, иначе каждое открытие вкладки возвращало бы
+ * человека к светлому экрану.
+ */
+function setTheme(prev, theme) {
+  const game = copy(prev.game);
+  game.settings.theme = normalizeTheme(theme);
+
+  /* Без сообщения: смена цвета видна сама по себе. */
+  return { ...prev, game };
+}
+
+/**
  * Удаляет привычку. Записи в истории остаются: они уже принесли опыт,
  * и стирать их значило бы задним числом отнять заработанное.
  */
@@ -301,6 +317,8 @@ export function reducer(prev, action) {
       return remove(prev, action.id);
     case 'reorder':
       return reorder(prev, action);
+    case 'setTheme':
+      return setTheme(prev, action.theme);
 
     /* Сброс возвращает в начало целиком, включая знакомство (FR-15.1). */
     case 'reset':

@@ -1,28 +1,10 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { DAILY_LIMIT } from '../state/rules.js';
-import {
-  hasProgress,
-  isDoneToday,
-  restingHabits,
-  todayHabits,
-  xpToday,
-} from '../state/selectors.js';
+import { isDoneToday, restingHabits, todayHabits, xpToday } from '../state/selectors.js';
 import HabitCard from './HabitCard.jsx';
 import Week from './Week.jsx';
 
-export default function Today({
-  game,
-  onComplete,
-  onUndo,
-  onEdit,
-  onDelete,
-  onCreate,
-  onExport,
-  onImport,
-  onReset,
-  onReorder,
-}) {
-  const fileRef = useRef(null);
+export default function Today({ game, onComplete, onUndo, onEdit, onDelete, onCreate, onReorder }) {
   const [dragId, setDragId] = useState(null);
 
   const visible = todayHabits(game);
@@ -141,36 +123,6 @@ export default function Today({
       </button>
 
       <Week game={game} />
-
-      <div className="datarow">
-        <button className="btn btn--data" type="button" onClick={onExport}>
-          Выгрузить в файл
-        </button>
-        <button className="btn btn--data" type="button" onClick={() => fileRef.current?.click()}>
-          Загрузить из файла
-        </button>
-      </div>
-
-      <input
-        className="visually-hidden"
-        type="file"
-        accept="application/json,.json"
-        aria-label="Файл с прогрессом"
-        ref={fileRef}
-        onChange={(event) => {
-          const file = event.target.files[0];
-          if (file) onImport(file);
-          // Сброс значения: иначе повторный выбор того же файла не считается изменением.
-          event.target.value = '';
-        }}
-      />
-
-      {/* Кнопка скрыта, пока сбрасывать нечего (FR-15.1). */}
-      {hasProgress(game) && (
-        <button className="btn btn--reset" type="button" onClick={onReset}>
-          Сбросить прогресс
-        </button>
-      )}
     </main>
   );
 }

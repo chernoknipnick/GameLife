@@ -1,5 +1,5 @@
-/* Иконки нарисованы вручную, а не подключены библиотекой: их четыре, и
-   ради четырёх контуров зависимость не заводится (правило раздела 11). */
+/* Иконки нарисованы вручную, а не подключены библиотекой: их шесть, и
+   ради шести контуров зависимость не заводится (правило раздела 11). */
 
 const FLAME = 'M5 .5C6.6 3 8.5 4 8.5 7A3.5 3.5 0 0 1 1.5 7c0-1.8 1.6-2.7 3.5-6.5z';
 
@@ -16,6 +16,32 @@ export function GripIcon() {
       {[6, 10, 14].map((y) =>
         [7, 13].map((x) => <circle cx={x} cy={y} r="1.4" fill="currentColor" key={x + '-' + y} />)
       )}
+    </svg>
+  );
+}
+
+/* Шестерёнка — вход в настройки там, где нет бокового меню. Зубцы
+   нарисованы восемью отрезками от центра, а не контуром: так короче и
+   одинаково читается в обеих темах. */
+export function GearIcon() {
+  return (
+    <svg className="icon-action" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="10" r="2.6" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="10" cy="10" r="6.2" stroke="currentColor" strokeWidth="1.5" />
+      {[0, 45, 90, 135].map((angle) => (
+        <line
+          key={angle}
+          x1="10"
+          y1="2.6"
+          x2="10"
+          y2="17.4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          transform={'rotate(' + angle + ' 10 10)'}
+          strokeDasharray="1.6 11.6"
+        />
+      ))}
     </svg>
   );
 }

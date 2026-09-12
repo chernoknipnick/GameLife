@@ -4,6 +4,7 @@
    (FR-15.3): файл приходит извне, доверия ему тем более меньше. */
 
 import { ALL_STATS, BACKUP_KEY, DIFFICULTY, SCHEMA_VERSION, STATS, STORAGE_KEY } from './rules.js';
+import { normalizeTheme } from './theme.js';
 import { DEFAULT_RESET_HOUR } from './day.js';
 import { createInitialState } from './schema.js';
 import { rebuildStreak } from './streaks.js';
@@ -48,6 +49,10 @@ export function normalizeState(loaded) {
   if (!loaded.settings || typeof loaded.settings !== 'object') {
     loaded.settings = base.settings;
   }
+
+  /* Неизвестная тема из чужого файла оставила бы приложение без цветов:
+     `data-theme` встал бы в бессмыслицу, а переменные не переопределились. */
+  loaded.settings.theme = normalizeTheme(loaded.settings.theme);
 
   /* Час смены суток участвует в каждом расчёте даты: мусор здесь сломал
      бы и стрики, и дневной лимит. */

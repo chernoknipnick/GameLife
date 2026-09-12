@@ -5,6 +5,8 @@
    контраст WCAG AA, требование NFR-4.3. */
 
 :root {
+  color-scheme: light;
+
   --green: #047857;
   --green-dark: #065f46;
   --green-soft: #ecfdf5;
@@ -43,6 +45,24 @@
      4.5:1 по NFR-4.3. */
   --danger: #b91c1c;
   --danger-dark: #991b1b;
+  /* Красный как надпись — отдельно от красного как заливки, по той же
+     причине, что и зелёный. */
+  --danger-ink: #b91c1c;
+
+  /* Зелёный как надпись — отдельно от зелёного как заливки. На светлой
+     подложке это один и тот же цвет, на тёмной они расходятся: заливка
+     остаётся тёмной, а надпись обязана стать светлой. */
+  --green-ink: #047857;
+
+  /* Цвета, зависящие от подложки. Раньше стояли прямо в правилах —
+     переключение темы их бы не достало. */
+  --track: rgb(17 24 39 / 0.1);
+  --label: #374151;
+  /* Тень под карточкой, которую тащат: на тёмной подложке затемнение не
+     видно, и приподнятость пришлось бы показывать светом. */
+  --shadow-lift: 0 8px 20px rgb(17 24 39 / 0.14);
+  --green-soft-deep: #d1fae5;
+  --canvas: #f7f6f3;
 
   --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
 }
@@ -93,6 +113,84 @@ body {
   body {
     background: var(--surface-dim);
   }
+}
+
+/* --- Тёмная тема (FR-15.4) ---
+
+   Не второй набор правил, а переопределение тех же переменных: формы,
+   отступы и зелёный акцент остаются прежними, меняется подложка. Это то,
+   на что рассчитывали с v0.1, когда все цвета сложили в `:root`.
+
+   Тёмные макеты в `design/` сюда не переносятся: там другая айдентика —
+   золотой акцент на тёмно-синем, с градиентами и свечением. Переключатель
+   темы менял бы не подложку, а продукт.
+
+   Контраст посчитан по NFR-4.3: в тёмной теме все пары текст-подложка
+   дают не меньше 4.5:1, самая слабая — светло-зелёная надпись на тёмной
+   зелёной плашке, 6.6:1.
+
+   В светлой теме одна пара норму не проходит и не проходила с v0.1:
+   `--muted-light` на белом даёт 2.54:1 при требуемых 4.5:1. Этим цветом
+   набраны пометки релизов в меню и подпись с датой создания. Здесь не
+   трогается: это правка принятой светлой темы, а не часть FR-15.4. */
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Зелёный как заливка остаётся тёмным — по нему идёт белый текст.
+     Зелёный как надпись становится светлым: на тёмной карточке
+     прежний #047857 дал бы 2.3:1. */
+  --green: #047857;
+  --green-dark: #065f46;
+  --green-ink: #6ee7b7;
+  --green-soft: #0a3b30;
+  --green-soft-deep: #0f4b3c;
+
+  --ink: #f3f4f6;
+  --ink-soft: #d1d5db;
+  --label: #d1d5db;
+  --muted: #9ca3af;
+  --muted-light: #7c8798;
+
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-dim: #1f262e;
+  --line: #2b333d;
+  --line-strong: #3d4650;
+  --canvas: #0d1117;
+
+  /* Плашки характеристик: подложка глухая и тёмная, надпись светлая —
+     зеркально светлой теме, где было наоборот. */
+  --strength-bg: #3a2413;
+  --strength-fg: #fdba74;
+  --strength-line: #5c3a1e;
+
+  --intellect-bg: #17213f;
+  --intellect-fg: #93c5fd;
+  --intellect-line: #26365e;
+
+  --health-bg: #0a3b30;
+  --health-fg: #6ee7b7;
+  --health-line: #12594a;
+
+  --discipline-bg: #1f262e;
+  --discipline-fg: #6ee7b7;
+  --discipline-line: #3d4650;
+
+  --fire-bg: #3a2413;
+  --fire-fg: #fdba74;
+
+  --danger: #b91c1c;
+  --danger-dark: #991b1b;
+  --danger-ink: #fca5a5;
+
+  /* Полоска характеристики: на тёмной карточке затемнение не видно,
+     дорожка осветляется. */
+  --track: rgb(255 255 255 / 0.12);
+
+  /* Та же причина у тени: карточку под пальцем поднимает светлый ободок,
+     а не тёмное пятно — тёмного на тёмном не видно. */
+  --shadow-lift: 0 8px 20px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.14);
 }
 
 /* --- Шапка с персонажем --- */
@@ -268,7 +366,7 @@ body {
   height: 4px;
   margin-top: 6px;
   border-radius: 9999px;
-  background: rgb(17 24 39 / 0.1);
+  background: var(--track);
   overflow: hidden;
 }
 
@@ -469,11 +567,11 @@ body {
   border: 1px dashed var(--green);
   border-radius: 14px;
   background: var(--green-soft);
-  color: var(--green);
+  color: var(--green-ink);
 }
 
 .btn--add:hover {
-  background: #d1fae5;
+  background: var(--green-soft-deep);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -543,7 +641,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--green);
+  color: var(--green-ink);
 }
 
 .modal__badge {
@@ -558,7 +656,7 @@ body {
   font-family: var(--mono);
   font-size: 34px;
   font-weight: 600;
-  color: var(--green);
+  color: var(--green-ink);
 }
 
 .modal__title {
@@ -609,7 +707,7 @@ body {
 
 /* Удаление необратимо — только оно подсвечивается опасным цветом. */
 .habit__action--delete:hover {
-  color: var(--danger);
+  color: var(--danger-ink);
 }
 
 .habit__action:focus-visible {
@@ -662,7 +760,7 @@ body {
 .habit--dragging {
   position: relative;
   z-index: 1;
-  box-shadow: 0 8px 20px rgb(17 24 39 / 0.14);
+  box-shadow: var(--shadow-lift);
 }
 
 /* --- Периодичность (FR-4.10, FR-4.11) --- */
@@ -690,7 +788,7 @@ body {
 .weekday--on {
   border-color: var(--green);
   background: var(--green-soft);
-  color: var(--green-dark);
+  color: var(--green-ink);
 }
 
 .habit__schedule {
@@ -894,7 +992,7 @@ body {
   margin: 0 0 8px;
   font-size: 12px;
   font-weight: 700;
-  color: #374151;
+  color: var(--label);
 }
 
 .field__input {
@@ -952,7 +1050,7 @@ body {
 .choice[aria-checked='true'] {
   border-color: var(--green);
   background: var(--green-soft);
-  color: var(--green);
+  color: var(--green-ink);
 }
 
 /* Выбранная характеристика подсвечивается своим цветом — тем же, что на
@@ -1010,7 +1108,7 @@ body {
   margin: 0;
   font-size: 10px;
   font-weight: 700;
-  color: var(--green-dark);
+  color: var(--green-ink);
 }
 
 .preview__value {
@@ -1018,12 +1116,12 @@ body {
   font-family: var(--mono);
   font-size: 17px;
   font-weight: 700;
-  color: var(--green-dark);
+  color: var(--green-ink);
 }
 
 .preview__card--xp .preview__label,
 .preview__card--xp .preview__value {
-  color: var(--green);
+  color: var(--green-ink);
 }
 
 /* --- Кнопки диалогов --- */
@@ -1046,7 +1144,7 @@ body {
   border-color: var(--line);
   border-radius: 12px;
   background: var(--surface);
-  color: #374151;
+  color: var(--label);
 }
 
 .btn--ghost:hover {
@@ -1103,7 +1201,7 @@ body {
 }
 
 .btn--reset:hover {
-  color: var(--danger);
+  color: var(--danger-ink);
 }
 
 .btn--reset[hidden] {
@@ -1135,7 +1233,7 @@ body {
   display: flex;
   justify-content: center;
   overflow-y: auto;
-  background: #f7f6f3;
+  background: var(--canvas);
 }
 
 .onboarding[hidden] {
@@ -1554,6 +1652,14 @@ body {
 }
 
 .navitem {
+  /* Работающие разделы — кнопки, будущие — текст. Сброс общий, чтобы
+     обе разновидности выглядели одинаково. */
+  width: 100%;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1564,9 +1670,13 @@ body {
   color: var(--ink-soft);
 }
 
+button.navitem {
+  cursor: pointer;
+}
+
 .navitem--active {
   background: var(--green-soft);
-  color: var(--green);
+  color: var(--green-ink);
   font-weight: 600;
 }
 
@@ -1631,4 +1741,129 @@ body {
   font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+/* --- Настройки и навигация (FR-15.4) --- */
+
+/* Шестерёнка в шапке — единственный вход в настройки на узком экране. */
+.hero__gear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44 пикселя — нижняя граница размера цели по NFR-4.2. */
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  cursor: pointer;
+}
+
+.settings {
+  padding: 20px 16px 40px;
+}
+
+.settings__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.settings__back {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.settings__block {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.settings__subtitle {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.settings__note {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Две кнопки вместо выключателя: выключатель не называет тему, которая
+   сейчас включена, — видно только то, что он нажат. */
+.themepick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.themepick__item {
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.themepick__item--on {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green-ink);
+}
+
+/* Экран настроек на узком экране занимает его целиком: шапка персонажа
+   и характеристики здесь ни при чём и только съедали бы высоту. */
+@media (max-width: 1023px) {
+  .app--settings .hero,
+  .app--settings .abilities {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .settings {
+    grid-area: today;
+    max-width: 720px;
+    margin: 32px;
+    padding: 0;
+  }
+
+  /* На десктопе назад ведёт боковое меню — вторая кнопка была бы лишней. */
+  .settings__back {
+    display: none;
+  }
+
+  .hero__gear {
+    display: none;
+  }
 }
